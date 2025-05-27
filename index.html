@@ -107,9 +107,10 @@ input, select, textarea {
     margin-bottom: 4px;
     outline: none;
     transition: border 0.14s, box-shadow 0.16s;
-    width: 98%;
-    min-width: 260px;
-    max-width: 600px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 input:focus, select:focus, textarea:focus {
     border-color: #6ad64d;
@@ -239,6 +240,26 @@ input:focus, select:focus, textarea:focus {
 
 .form-group label {
     font-size: 15px; color: #639643; font-weight: 600; margin-bottom: 7px;
+}
+.form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.form-group label {
+    width: 100px;
+    min-width: 70px;
+    margin-right: 16px;
+    text-align: right;
+    flex-shrink: 0;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .log-entry, .recommendation-item, .nutrition-accuracy-info {
