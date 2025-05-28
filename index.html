@@ -506,42 +506,42 @@ input:focus, select:focus, textarea:focus {
     <div class="data-page" id="dataPage" style="display: none;">
         <div class="interface interface-c">
             <div class="interface-title">📊 营养数据分析与健康趋势</div>
-            <div id="progressSection" class="progress-section" style="display:none;">
+            <div id="data-progressSection" class="progress-section" style="display:none;">
                 <div class="progress-title">营养达成进度</div>
                 <div class="progress-item">
                     <div class="progress-label">
                         <span>卡路里</span>
-                        <span id="progressCaloriesValue"></span>
+                        <span id="data-progressCaloriesValue"></span>
                     </div>
                     <div class="progress-bar"><div class="progress-fill calories" id="progressCalories"></div></div>
                 </div>
                 <div class="progress-item">
                     <div class="progress-label">
                         <span>蛋白质</span>
-                        <span id="progressProteinValue"></span>
+                        <span id="data-progressProteinValue"></span>
                     </div>
-                    <div class="progress-bar"><div class="progress-fill protein" id="progressProtein"></div></div>
+                    <div class="progress-bar"><div class="progress-fill protein" id="data-progressProtein"></div></div>
                 </div>
                 <div class="progress-item">
                     <div class="progress-label">
                         <span>碳水</span>
-                        <span id="progressCarbsValue"></span>
+                        <span id="data-progressCarbsValue"></span>
                     </div>
-                    <div class="progress-bar"><div class="progress-fill carbs" id="progressCarbs"></div></div>
+                    <div class="progress-bar"><div class="progress-fill carbs" id="data-progressCarbs"></div></div>
                 </div>
                 <div class="progress-item">
                     <div class="progress-label">
                         <span>脂肪</span>
-                        <span id="progressFatValue"></span>
+                        <span id="data-progressFatValue"></span>
                     </div>
-                    <div class="progress-bar"><div class="progress-fill fat" id="progressFat"></div></div>
+                    <div class="progress-bar"><div class="progress-fill fat" id="data-progressFat"></div></div>
                 </div>
                 <div class="progress-item">
                     <div class="progress-label">
                         <span>膳食纤维</span>
-                        <span id="progressFiberValue"></span>
+                        <span id="data-progressFiberValue"></span>
                     </div>
-                    <div class="progress-bar"><div class="progress-fill fiber" id="progressFiber"></div></div>
+                    <div class="progress-bar"><div class="progress-fill fiber" id="data-progressFiber"></div></div>
                 </div>
             </div>
             <div class="daily-health-score" id="dailyHealthScore" style="display:none;">
@@ -861,13 +861,18 @@ function switchToMainPage() {
 function switchToDataPage() {
     document.getElementById('mainPage').style.display = 'none';
     document.getElementById('dataPage').style.display = 'block';
-    // 确保数据页显示准确性信息
+    // 数据页进度条显示（确保 data-progressSection 显示）
+    var section = document.getElementById('data-progressSection');
+    if(section) section.style.display = '';
+    // 显示营养准确性信息
     const accuracyInfo = document.getElementById('nutritionAccuracyInfo');
     if (accuracyInfo) {
         accuracyInfo.style.display = 'block';
     }
-    updateDataPageCharts();
-    updateAccuracyInfo();
+    // 刷新数据页内容
+    updateDataProgressBars();
+    updateDataPageCharts && updateDataPageCharts();
+    updateAccuracyInfo && updateAccuracyInfo();
 }
 
 // ========== 菜单切换功能 (iOS兼容增强版本) ==========
@@ -1310,6 +1315,34 @@ function updateProgressBars() {
     document.getElementById('progressFatValue').textContent = `${curr.fat} / ${plan.targetFat} g`;
     document.getElementById('progressFiberValue').textContent = `${curr.fiber} / ${plan.targetFiber} g`;
 }
+
+// ========== 数据页进度条、健康分显示 ==========
+// （新代码，直接插入即可）
+function updateDataProgressBars() {
+    const plan = appState.plan;
+    const curr = appState.dailyNutrition;
+    function updateBar(id, value, max) {
+        const percent = Math.min(100, Math.round((value / max) * 100));
+        document.getElementById(id).style.width = percent + '%';
+        if (percent > 100) {
+            document.getElementById(id).classList.add('progress-overflow');
+        } else {
+            document.getElementById(id).classList.remove('progress-overflow');
+        }
+    }
+    updateBar('data-progressCalories', curr.calories, plan.targetCalories);
+    updateBar('data-progressProtein', curr.protein, plan.targetProtein);
+    updateBar('data-progressCarbs', curr.carbs, plan.targetCarbs);
+    updateBar('data-progressFat', curr.fat, plan.targetFat);
+    updateBar('data-progressFiber', curr.fiber, plan.targetFiber);
+
+    document.getElementById('data-progressCaloriesValue').textContent = `${curr.calories} / ${plan.targetCalories} kcal`;
+    document.getElementById('data-progressProteinValue').textContent = `${curr.protein} / ${plan.targetProtein} g`;
+    document.getElementById('data-progressCarbsValue').textContent = `${curr.carbs} / ${plan.targetCarbs} g`;
+    document.getElementById('data-progressFatValue').textContent = `${curr.fat} / ${plan.targetFat} g`;
+    document.getElementById('data-progressFiberValue').textContent = `${curr.fiber} / ${plan.targetFiber} g`;
+}
+
 
 // ========== 健康评分计算 ==========
 function calculateNutritionDensity(nutrition) {
