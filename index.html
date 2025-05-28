@@ -503,7 +503,7 @@ input:focus, select:focus, textarea:focus {
 </div>
 
     <!-- 数据分析页面 -->
-    <div class="data-page" id="dataPage">
+    <div class="data-page" id="dataPage" style="display: none;">
         <div class="interface interface-c">
             <div class="interface-title">📊 营养数据分析与健康趋势</div>
             <div id="progressSection" class="progress-section" style="display:none;">
@@ -861,7 +861,13 @@ function switchToMainPage() {
 function switchToDataPage() {
     document.getElementById('mainPage').style.display = 'none';
     document.getElementById('dataPage').style.display = 'block';
+    // 确保数据页显示准确性信息
+    const accuracyInfo = document.getElementById('nutritionAccuracyInfo');
+    if (accuracyInfo) {
+        accuracyInfo.style.display = 'block';
+    }
     updateDataPageCharts();
+    updateAccuracyInfo();
 }
 
 // ========== 菜单切换功能 (iOS兼容增强版本) ==========
