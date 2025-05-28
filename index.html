@@ -326,13 +326,6 @@ input:focus, select:focus, textarea:focus {
         display: none; 
     }
 }
-.nav-content { 
-    display: none; 
-    position: absolute;
-    z-index: 1000;
-}
-.nav-dropdown:hover .nav-content { display: block; }
-.nav-dropdown.active .nav-content { display: block; }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
@@ -369,30 +362,6 @@ input:focus, select:focus, textarea:focus {
         min-width: auto;
         width: 100%;
     }
-
-@media (max-width: 768px) {
-    /* 现有的规则保持不变，在最后添加： */
-    
-    .nav-content {
-        right: 0;
-        min-width: 140px;
-        border: 3px solid #639643;
-        background: #d6ffd2;
-    }
-    
-    .nav-content a {
-        padding: 16px 20px;
-        font-size: 16px;
-        border-bottom: 2px dashed #b39a69;
-    }
-    
-    .icon-btn {
-        width: 48px;
-        height: 48px;
-        font-size: 26px;
-        /* 增加触摸目标大小 */
-    }
-}
 
 @media (max-width: 480px) {
     .interface {
@@ -449,7 +418,7 @@ input:focus, select:focus, textarea:focus {
             <input type="number" id="height" placeholder="请输入身高，如175" min="100" max="250">
         </div>
         <div class="form-group">
-            <label⚖️ 体重 (kg)</label>
+            <label>⚖️ 体重 (kg)</label>
             <input type="number" id="weight" placeholder="请输入体重，如70" min="30" max="300">
         </div>
         <div class="form-group">
@@ -894,90 +863,116 @@ function switchToDataPage() {
     document.getElementById('dataPage').style.display = 'block';
     updateDataPageCharts();
 }
-// ========== 菜单切换功能 (iOS兼容版本) ==========
+
+// ========== 菜单切换功能 (iOS兼容增强版本) ==========
 let isMenuOpen = false;
+let menuButton = null;
+let navDropdown = null;
 
 function toggleNavMenu() {
-    const navDropdown = document.querySelector('.nav-dropdown');
+    console.log('Menu toggle called, current state:', isMenuOpen);
+    
+    if (!navDropdown) {
+        navDropdown = document.querySelector('.nav-dropdown');
+    }
     
     if (isMenuOpen) {
         // 关闭菜单
         navDropdown.classList.remove('active');
         isMenuOpen = false;
+        console.log('Menu closed');
     } else {
         // 打开菜单
         navDropdown.classList.add('active');
         isMenuOpen = true;
+        console.log('Menu opened');
     }
-    
-    // 强制重新渲染（iOS Safari兼容性）
-    navDropdown.style.display = 'none';
-    navDropdown.offsetHeight; // 触发重排
-    navDropdown.style.display = '';
 }
 
 // 关闭菜单的函数
 function closeNavMenu() {
-    const navDropdown = document.querySelector('.nav-dropdown');
-    navDropdown.classList.remove('active');
-    isMenuOpen = false;
+    if (!navDropdown) {
+        navDropdown = document.querySelector('.nav-dropdown');
+    }
+    if (navDropdown) {
+        navDropdown.classList.remove('active');
+        isMenuOpen = false;
+        console.log('Menu force closed');
+    }
 }
 
 // 页面加载完成后设置事件监听
 document.addEventListener('DOMContentLoaded', function() {
-    // 菜单按钮点击事件
-    const menuBtn = document.getElementById('navMenuBtn');
-    if (menuBtn) {
-        // 移除可能存在的onclick属性
-        menuBtn.removeAttribute('onclick');
+    console.log('Setting up menu events');
+    
+    // 获取元素引用
+    menuButton = document.getElementById('navMenuBtn');
+    navDropdown = document.querySelector('.nav-dropdown');
+    
+    if (menuButton && navDropdown) {
+        console.log('Menu elements found');
         
-        // 使用addEventListener绑定事件
-        menuBtn.addEventListener('click', function(e) {
+        // 清除现有事件
+        menuButton.removeAttribute('onclick');
+        
+        // 创建统一的点击处理函数
+        function handleMenuClick(e) {
+            console.log('Menu button event triggered:', e.type);
             e.preventDefault();
             e.stopPropagation();
-            toggleNavMenu();
-        });
+            e.stopImmediatePropagation();
+            
+            // 小延迟确保事件处理完成
+            setTimeout(toggleNavMenu, 10);
+            return false;
+        }
         
-        // 添加触摸事件支持（iOS专用）
-        menuBtn.addEventListener('touchend', function(e) {
+        // 绑定点击和触摸事件
+        menuButton.addEventListener('click', handleMenuClick, { capture: true, passive: false });
+        menuButton.addEventListener('touchend', handleMenuClick, { capture: true, passive: false });
+        
+        // 防止触摸开始时的默认行为
+        menuButton.addEventListener('touchstart', function(e) {
             e.preventDefault();
-            e.stopPropagation();
-            toggleNavMenu();
-        });
+        }, { passive: false });
+        
+    } else {
+        console.error('Menu elements not found!');
     }
     
     // 点击页面其他位置关闭菜单
-    document.addEventListener('click', function(event) {
-        const navDropdown = document.querySelector('.nav-dropdown');
-        const navBtn = document.getElementById('navMenuBtn');
+    function handleDocumentClick(event) {
+        if (!navDropdown || !menuButton) return;
         
-        if (!navDropdown.contains(event.target) && event.target !== navBtn) {
+        // 检查是否点击在菜单区域外
+        if (!navDropdown.contains(event.target) && event.target !== menuButton) {
             closeNavMenu();
         }
-    });
+    }
     
-    // 触摸事件关闭菜单（iOS专用）
-    document.addEventListener('touchstart', function(event) {
-        const navDropdown = document.querySelector('.nav-dropdown');
-        const navBtn = document.getElementById('navMenuBtn');
-        
-        if (!navDropdown.contains(event.target) && event.target !== navBtn) {
-            closeNavMenu();
-        }
-    });
+    // 延迟绑定文档事件，避免立即触发
+    setTimeout(function() {
+        document.addEventListener('click', handleDocumentClick, { capture: true });
+        document.addEventListener('touchstart', handleDocumentClick, { capture: true });
+    }, 100);
     
     // 菜单项点击后关闭菜单
-    const navLinks = document.querySelectorAll('.nav-content a');
-    navLinks.forEach(function(link) {
-        link.addEventListener('click', function() {
-            closeNavMenu();
-        });
+    setTimeout(function() {
+        const navLinks = document.querySelectorAll('.nav-content a');
+        console.log('Found nav links:', navLinks.length);
         
-        // iOS触摸支持
-        link.addEventListener('touchend', function() {
-            closeNavMenu();
+        navLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+                console.log('Nav link clicked');
+                setTimeout(closeNavMenu, 50);
+            });
+            
+            link.addEventListener('touchend', function() {
+                console.log('Nav link touched');
+                setTimeout(closeNavMenu, 50);
+            });
         });
-    });
+    }, 200);
 });
 
 // ========== 日志与消息 ==========
