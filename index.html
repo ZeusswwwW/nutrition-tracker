@@ -298,8 +298,24 @@ input:focus, select:focus, textarea:focus {
     position: absolute;
     z-index: 1000;
 }
-.nav-dropdown:hover .nav-content { display: block; }
-.nav-dropdown.active .nav-content { display: block; }.nav-content { 
+.nav-dropdown.active .nav-content { 
+    display: block; 
+}
+
+/* 桌面端保留悬停效果 */
+@media (hover: hover) and (pointer: fine) {
+    .nav-dropdown:hover .nav-content { 
+        display: block; 
+    }
+}
+
+/* 移动端禁用悬停效果 */
+@media (hover: none) and (pointer: coarse) {
+    .nav-dropdown:hover .nav-content { 
+        display: none; 
+    }
+}
+.nav-content { 
     display: none; 
     position: absolute;
     z-index: 1000;
@@ -342,6 +358,29 @@ input:focus, select:focus, textarea:focus {
         min-width: auto;
         width: 100%;
     }
+
+@media (max-width: 768px) {
+    /* 现有的规则保持不变，在最后添加： */
+    
+    .nav-content {
+        right: 0;
+        min-width: 140px;
+        border: 3px solid #639643;
+        background: #d6ffd2;
+    }
+    
+    .nav-content a {
+        padding: 16px 20px;
+        font-size: 16px;
+        border-bottom: 2px dashed #b39a69;
+    }
+    
+    .icon-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 26px;
+        /* 增加触摸目标大小 */
+    }
 }
 
 @media (max-width: 480px) {
@@ -372,7 +411,7 @@ input:focus, select:focus, textarea:focus {
   <div class="title" style="font-size:2rem;font-weight:600;color:#64b5f6;letter-spacing:2px;">Trii 4.5</div>
   <div class="header-buttons" style="display:flex;gap:10px;align-items:center;">
     <div class="nav-dropdown" style="position:relative;">
-      <button class="icon-btn" id="navMenuBtn" title="菜单" onclick="toggleNavMenu()">☰</button>
+     <button class="icon-btn" id="navMenuBtn" title="菜单" onclick="toggleNavMenu(event)">☰</button>
       <div class="nav-content" style="right:0;left:auto;top:42px;">
         <a href="javascript:void(0);" onclick="switchToMainPage()">主页</a>
         <a href="javascript:void(0);" onclick="switchToDataPage()">数据页</a>
@@ -399,7 +438,7 @@ input:focus, select:focus, textarea:focus {
             <input type="number" id="height" placeholder="请输入身高，如175" min="100" max="250">
         </div>
         <div class="form-group">
-            <label>⚖️ 体重 (kg)</label>
+            <label⚖️ 体重 (kg)</label>
             <input type="number" id="weight" placeholder="请输入体重，如70" min="30" max="300">
         </div>
         <div class="form-group">
@@ -845,7 +884,8 @@ function switchToDataPage() {
     updateDataPageCharts();
 }
 // ========== 菜单切换功能 ==========
-function toggleNavMenu() {
+function toggleNavMenu(event) {
+    event.stopPropagation(); // 防止事件冒泡
     const navDropdown = document.querySelector('.nav-dropdown');
     navDropdown.classList.toggle('active');
 }
@@ -853,10 +893,22 @@ function toggleNavMenu() {
 // 点击页面其他位置关闭菜单
 document.addEventListener('click', function(event) {
     const navDropdown = document.querySelector('.nav-dropdown');
-    const navBtn = document.getElementById('navMenuBtn');
     
     if (!navDropdown.contains(event.target)) {
         navDropdown.classList.remove('active');
+    }
+});
+
+// 阻止菜单内部点击关闭菜单
+document.addEventListener('DOMContentLoaded', function() {
+    const navContent = document.querySelector('.nav-content');
+    if (navContent) {
+        navContent.addEventListener('click', function(event) {
+            // 如果点击的是菜单项链接，则关闭菜单
+            if (event.target.tagName === 'A') {
+                document.querySelector('.nav-dropdown').classList.remove('active');
+            }
+        });
     }
 });
 
