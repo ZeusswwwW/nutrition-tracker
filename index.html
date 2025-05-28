@@ -15,14 +15,23 @@ body {
 }
 
 /* 方块立体感大边框和阴影 */
-.interface, .main-page, .data-page {
+.interface, .data-page {
     background: #e3e3e3;
     border: 4px solid #639643;
-    border-radius: 0; /* 直角 */
+    border-radius: 0;
     box-shadow: 8px 8px 0 #b39a69, 0 8px 32px 0 #8fc87733;
-    padding: 40px 44px 32px 44px;
+    padding: min(5vw, 40px) min(5vw, 44px) min(4vw, 32px) min(5vw, 44px);
     margin-bottom: 20px;
     transition: box-shadow 0.18s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.main-page {
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
 }
 
 .app-header {
@@ -274,17 +283,87 @@ input:focus, select:focus, textarea:focus {
 
 .hidden { display: none !important; }
 .main-page {
-    width: 97vw;
+    width: 100%;
     max-width: 1400px;
-    min-width: 350px;
-    margin: 2.5vh auto 2.5vh auto;
+    min-width: 320px;
+    margin: 2.5vh auto;
     display: flex;
     flex-direction: column;
     gap: 20px;
     box-sizing: border-box;
+    padding: 0 min(2vw, 20px);
 }
-.nav-content { display: none; }
+.nav-content { 
+    display: none; 
+    position: absolute;
+    z-index: 1000;
+}
 .nav-dropdown:hover .nav-content { display: block; }
+.nav-dropdown.active .nav-content { display: block; }.nav-content { 
+    display: none; 
+    position: absolute;
+    z-index: 1000;
+}
+.nav-dropdown:hover .nav-content { display: block; }
+.nav-dropdown.active .nav-content { display: block; }
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .interface {
+        padding: 20px 16px 16px 16px;
+        margin-bottom: 16px;
+    }
+    
+    .app-header {
+        padding: 8px 16px;
+    }
+    
+    .title {
+        font-size: 1.5rem;
+    }
+    
+    .main-page {
+        padding: 0 10px;
+        gap: 16px;
+    }
+    
+    .form-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .form-group label {
+        text-align: left;
+        margin-bottom: 8px;
+        width: 100%;
+    }
+    
+    input, select, textarea {
+        min-width: auto;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .interface {
+        padding: 16px 12px;
+    }
+    
+    .title {
+        font-size: 1.2rem;
+        letter-spacing: 1px;
+    }
+    
+    .interface-title {
+        font-size: 1rem;
+        padding: 8px 4px;
+        margin-bottom: 16px;
+    }
+    
+    .progress-section {
+        padding: 8px 4px;
+    }
+}
 
     </style>
 </head>
@@ -293,7 +372,7 @@ input:focus, select:focus, textarea:focus {
   <div class="title" style="font-size:2rem;font-weight:600;color:#64b5f6;letter-spacing:2px;">Trii 4.5</div>
   <div class="header-buttons" style="display:flex;gap:10px;align-items:center;">
     <div class="nav-dropdown" style="position:relative;">
-      <button class="icon-btn" id="navMenuBtn" title="菜单">☰</button>
+      <button class="icon-btn" id="navMenuBtn" title="菜单" onclick="toggleNavMenu()">☰</button>
       <div class="nav-content" style="right:0;left:auto;top:42px;">
         <a href="javascript:void(0);" onclick="switchToMainPage()">主页</a>
         <a href="javascript:void(0);" onclick="switchToDataPage()">数据页</a>
@@ -765,6 +844,21 @@ function switchToDataPage() {
     document.getElementById('dataPage').style.display = 'block';
     updateDataPageCharts();
 }
+// ========== 菜单切换功能 ==========
+function toggleNavMenu() {
+    const navDropdown = document.querySelector('.nav-dropdown');
+    navDropdown.classList.toggle('active');
+}
+
+// 点击页面其他位置关闭菜单
+document.addEventListener('click', function(event) {
+    const navDropdown = document.querySelector('.nav-dropdown');
+    const navBtn = document.getElementById('navMenuBtn');
+    
+    if (!navDropdown.contains(event.target)) {
+        navDropdown.classList.remove('active');
+    }
+});
 
 // ========== 日志与消息 ==========
 function addMessage(sender, message) {
