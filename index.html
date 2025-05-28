@@ -392,11 +392,11 @@ input:focus, select:focus, textarea:focus {
   <div class="header-buttons" style="display:flex;gap:10px;align-items:center;">
     <div class="nav-dropdown" style="position:relative;">
 <button class="icon-btn" id="navMenuBtn" title="菜单">☰</button>
-      <div class="nav-content" style="right:0;left:auto;top:42px;">
-        <a href="javascript:void(0);" onclick="switchToMainPage()">主页</a>
-        <a href="javascript:void(0);" onclick="switchToDataPage()">数据页</a>
-        <a href="javascript:void(0);" onclick="resetApp()">重置</a>
-      </div>
+     <div class="nav-content" style="right:0;left:auto;top:42px;">
+  <a href="#" data-action="mainPage">主页</a>
+  <a href="#" data-action="dataPage">数据页</a>
+  <a href="#" data-action="reset">重置</a>
+</div>
     </div>
   </div>
 </div>
@@ -968,22 +968,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
     
     // 菜单项点击后关闭菜单
-    setTimeout(function() {
-        const navLinks = document.querySelectorAll('.nav-content a');
-        console.log('Found nav links:', navLinks.length);
-        
-        navLinks.forEach(function(link) {
-            link.addEventListener('click', function() {
-                console.log('Nav link clicked');
-                setTimeout(closeNavMenu, 50);
-            });
-            
-            link.addEventListener('touchend', function() {
-                console.log('Nav link touched');
-                setTimeout(closeNavMenu, 50);
-            });
-        });
-    }, 200);
+   setTimeout(function() {
+    const navLinks = document.querySelectorAll('.nav-content a');
+    navLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault(); // 阻止 <a> 跳转
+            const action = link.getAttribute('data-action');
+            // 菜单逻辑
+            if (action === 'mainPage') {
+                switchToMainPage();
+            } else if (action === 'dataPage') {
+                switchToDataPage();
+            } else if (action === 'reset') {
+                resetApp();
+            }
+            setTimeout(closeNavMenu, 50);
+        }, false);
+        // 如遇安卓部分浏览器 touchend 不冒泡，可考虑补充绑定
+        link.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            const action = link.getAttribute('data-action');
+            if (action === 'mainPage') {
+                switchToMainPage();
+            } else if (action === 'dataPage') {
+                switchToDataPage();
+            } else if (action === 'reset') {
+                resetApp();
+            }
+            setTimeout(closeNavMenu, 50);
+        }, false);
+    });
+}, 200);
 });
 
 // ========== 日志与消息 ==========
