@@ -219,6 +219,24 @@ input:focus, select:focus, textarea:focus {
     background: repeating-linear-gradient(45deg,rgba(244,67,54,0.3),rgba(244,67,54,0.3) 6px,rgba(244,67,54,0.1) 6px,rgba(244,67,54,0.1) 12px);
     animation: overflow-pulse 2s infinite;
 }
+
+.fat-ball {
+  transition: transform 0.5s;
+  box-sizing: border-box;
+  border: 2px solid #ff4d7e;
+}
+
+.progress-label-left, .progress-label-right {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 进度条高度增加以适应文字 */
+.progress-bar {
+  height: 22px;
+}
+
 @keyframes overflow-pulse { 0%,100%{opacity:0.6;} 50%{opacity:1;} }
 
 .daily-health-score {
@@ -269,6 +287,21 @@ input:focus, select:focus, textarea:focus {
     width: 100%;
     min-width: 0;
     max-width: 100%;
+    box-sizing: border-box;
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    width: 100px;
+    min-width: 70px;
+    margin-right: 16px;
+    text-align: right;
+    flex-shrink: 0;
 }
 
 .log-entry, .recommendation-item, .nutrition-accuracy-info {
@@ -506,9 +539,9 @@ input:focus, select:focus, textarea:focus {
             <input type="number" id="height" placeholder="请输入身高，如175" min="100" max="250">
         </div>
 <div class="form-group">
-    <label for="weight">⚖️ 体重 (kg)</label>
+    <label>⚖️ 体重 (kg)</label>
     <input type="number" id="weight" placeholder="请输入体重，如70" min="30" max="300">
-</div>      
+</div>
         <div class="form-group">
             <label>🎂 年龄</label>
             <input type="number" id="age" placeholder="请输入年龄，如28" min="16" max="100">
@@ -527,72 +560,69 @@ input:focus, select:focus, textarea:focus {
   </div>
 
   <!-- 录入区域，信息录入后常驻上方 -->
-  <div class="interface" id="mealInputArea" style="margin-top:0; display:none;">
-  <div class="interface-title">Nutrition Tracker</div>   
-    <div id="mealInput">
-    <div class="meal-counter">
+
+<div class="interface" id="mealInputArea" style="margin-top:0; display:none; padding-top:15px; padding-bottom:15px;">
+  <div id="mealInput" style="display:flex; flex-direction:column; gap:10px;">
+    <div class="meal-counter" style="margin-bottom:10px;">
         今日第 <span id="mealNumber">1</span> 餐（建议每日2-5餐）
     </div>
-  <div class="form-group" style="display:flex;gap:12px;align-items:flex-start;">
-    <button class="btn" id="btnRandomMeal" type="button" style="flex-shrink:0;height:44px;">🎲 随机生成一餐</button>
-    <div style="flex:1;">
-      <label>输入：</label>
-      <textarea id="mealInputRaw" placeholder="如：20250527-0830-32-两个包子，炒猪肉200g，草莓80g" rows="2"></textarea>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button class="btn" id="btnRandomMeal" type="button" style="flex:1; height:44px;">🎲 随机生成一餐</button>
+      <textarea id="mealInputRaw" placeholder="如：20250527-0830-32-两个包子，炒猪肉200g，草莓80g" rows="2" style="flex:2;"></textarea>
+      <button class="btn" onclick="submitMeal()" style="flex:1;">录入本餐数据</button>
+      <button class="btn" id="btnFeedSnake" style="flex:1; background-color:#e25555; cursor:not-allowed;" disabled>投喂小蛇</button>
     </div>
+    <div id="mealFeedback" style="margin-top:8px;"></div>
   </div>
-    <button class="btn" onclick="submitMeal()">录入本餐数据</button>
 </div>
 
-    <div id="mealFeedback" style="margin-top:16px;"></div>
-  </div>
 <!-- 进度条与健康分区域，实时反馈 -->
-<div class="interface" id="progressHealthArea" style="margin-top:0; padding-top:0; display:none;">
-<div id="progressSection" class="progress-section">
-    <div class="progress-title">营养达成进度</div>
-    <div class="progress-item">
-        <div class="progress-label">
-            <span>卡路里</span>
-            <span id="progressCaloriesValue"></span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill calories" id="progressCalories"></div></div>
+<div class="interface" id="progressHealthArea" style="margin-top:0; padding-top:10px; padding-bottom:15px; display:none;">
+  <div id="progressSection" class="progress-section" style="margin:0; padding:8px 4px;">
+    <div class="progress-title" style="margin-bottom:8px;">营养达成进度</div>
+    <div class="progress-item" style="margin-bottom:10px;">
+      <div class="progress-bar" style="position:relative;">
+        <div class="progress-label-left" style="position:absolute; left:5px; top:0; font-size:12px; color:#fff; line-height:18px; z-index:2; text-shadow:0 0 2px #000;">卡路里</div>
+        <div class="progress-fill calories" id="progressCalories"></div>
+        <div class="progress-label-right" style="position:absolute; right:5px; top:0; font-size:12px; color:#fff; line-height:18px; z-index:2; text-shadow:0 0 2px #000;" id="progressCaloriesValue"></div>
+      </div>
     </div>
-    <div class="progress-item">
-        <div class="progress-label">
-            <span>蛋白质</span>
-            <span id="progressProteinValue"></span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill protein" id="progressProtein"></div></div>
+    <div class="progress-item" style="margin-bottom:10px;">
+      <div class="progress-bar" style="position:relative;">
+        <div class="progress-label-left" style="position:absolute; left:5px; top:0; font-size:12px; color:#fff; line-height:18px; z-index:2; text-shadow:0 0 2px #000;">蛋白质</div>
+        <div class="progress-fill protein" id="progressProtein"></div>
+        <div class="progress-label-right" style="position:absolute; right:5px; top:0; font-size:12px; color:#fff; line-height:18px; z-index:2; text-shadow:0 0 2px #000;" id="progressProteinValue"></div>
+      </div>
     </div>
-    <div class="progress-item">
-        <div class="progress-label">
-            <span>碳水</span>
-            <span id="progressCarbsValue"></span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill carbs" id="progressCarbs"></div></div>
+    <div class="progress-item" style="margin-bottom:10px;">
+      <div class="progress-bar" style="position:relative;">
+        <div class="progress-label-left" style="position:absolute; left:5px; top:0; font-size:12px; color:#fff; line-height:18px; z-index:2; text-shadow:0 0 2px #000;">碳水</div>
+        <div class="progress-fill carbs" id="progressCarbs"></div>
+        <div class="progress-label-right" style="position:absolute; right:5px; top:0; font-size:12px; color:#fff; line-height:18px; z-index:2; text-shadow:0 0 2px #000;" id="progressCarbsValue"></div>
+      </div>
     </div>
-    <div class="progress-item">
-        <div class="progress-label">
-            <span>脂肪</span>
-            <span id="progressFatValue"></span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill fat" id="progressFat"></div></div>
+    <div class="progress-item" style="margin-bottom:10px;">
+      <div class="progress-bar" style="position:relative;">
+        <div class="progress-label-left" style="position:absolute; left:5px; top:0; font-size:12px; color:#fff; line-height:18px; z-index:2; text-shadow:0 0 2px #000;">脂肪</div>
+        <div class="progress-fill fat" id="progressFat"></div>
+        <div id="fatBallsContainer" style="position:absolute; top:0; left:0; height:100%; display:none;"></div>
+        <div class="progress-label-right" style="position:absolute; right:5px; top:0; font-size:12px; color:#fff; line-height:18px; z-index:2; text-shadow:0 0 2px #000;" id="progressFatValue"></div>
+      </div>
     </div>
-    <div class="progress-item">
-        <div class="progress-label">
-            <span>膳食纤维</span>
-            <span id="progressFiberValue"></span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill fiber" id="progressFiber"></div></div>
+    <div class="progress-item" style="margin-bottom:5px;">
+      <div class="progress-bar" style="position:relative;">
+        <div class="progress-label-left" style="position:absolute; left:5px; top:0; font-size:12px; color:#fff; line-height:18px; z-index:2; text-shadow:0 0 2px #000;">膳食纤维</div>
+        <div class="progress-fill fiber" id="progressFiber"></div>
+        <div class="progress-label-right" style="position:absolute; right:5px; top:0; font-size:12px; color:#fff; line-height:18px; z-index:2; text-shadow:0 0 2px #000;" id="progressFiberValue"></div>
+      </div>
     </div>
-</div> 
-    <div class="daily-health-score" id="dailyHealthScore" style="display:none;">
-        <div>今日健康评分</div>
-        <div class="daily-health-score-value" id="healthScoreValue">-</div>
-        <div class="daily-health-score-breakdown" id="healthScoreBreakdown"></div>
-    </div>
+  </div> 
+  <div class="daily-health-score" id="dailyHealthScore" style="display:none; margin-top:12px; padding:8px 0;">
+    <div>今日健康评分</div>
+    <div class="daily-health-score-value" id="healthScoreValue">-</div>
+    <div class="daily-health-score-breakdown" id="healthScoreBreakdown"></div>
   </div>
 </div>
-
     <!-- 数据分析页面 -->
     <div class="data-page" id="dataPage" style="display: none;">
         <div class="interface interface-c">
@@ -834,7 +864,661 @@ const foodDatabase = {
         vitaminA: 260, vitaminC: 0, vitaminE: 0.87, vitaminB1: 0.03, vitaminB2: 0.36, vitaminB6: 0.17, folate: 54,
         calcium: 129, iron: 3.1, magnesium: 16, phosphorus: 183, potassium: 121, sodium: 790, zinc: 1.2
     },
+// === 新增蔬菜类 ===
+'青椒': {
+    calories: 31, protein: 1.0, carbs: 6.0, fat: 0.3, fiber: 2.1, processing: 1,
+    vitaminA: 18, vitaminC: 89.3, vitaminE: 0.37, vitaminB1: 0.05, vitaminB2: 0.03, vitaminB6: 0.29, folate: 13,
+    calcium: 10, iron: 0.43, magnesium: 10, phosphorus: 20, potassium: 175, sodium: 2, zinc: 0.13
+},
+'红椒': {
+    calories: 31, protein: 1.0, carbs: 6.3, fat: 0.3, fiber: 2.1, processing: 1,
+    vitaminA: 534, vitaminC: 128, vitaminE: 1.58, vitaminB1: 0.05, vitaminB2: 0.08, vitaminB6: 0.29, folate: 18,
+    calcium: 7, iron: 0.43, magnesium: 12, phosphorus: 26, potassium: 211, sodium: 2, zinc: 0.25
+},
+'茼蒿': {
+    calories: 22, protein: 2.1, carbs: 3.8, fat: 0.3, fiber: 1.9, processing: 1,
+    vitaminA: 520, vitaminC: 35, vitaminE: 2.5, vitaminB1: 0.05, vitaminB2: 0.08, vitaminB6: 0.15, folate: 115,
+    calcium: 77, iron: 1.42, magnesium: 25, phosphorus: 48, potassium: 387, sodium: 9, zinc: 0.24
+},
+'油麦菜': {
+    calories: 15, protein: 1.5, carbs: 2.8, fat: 0.2, fiber: 1.3, processing: 1,
+    vitaminA: 375, vitaminC: 18, vitaminE: 0.8, vitaminB1: 0.06, vitaminB2: 0.08, vitaminB6: 0.09, folate: 73,
+    calcium: 36, iron: 0.86, magnesium: 13, phosphorus: 28, potassium: 238, sodium: 5, zinc: 0.23
+},
+'韭菜': {
+    calories: 27, protein: 1.9, carbs: 4.1, fat: 0.6, fiber: 2.4, processing: 1,
+    vitaminA: 300, vitaminC: 12.8, vitaminE: 0.7, vitaminB1: 0.05, vitaminB2: 0.11, vitaminB6: 0.13, folate: 64,
+    calcium: 54, iron: 1.6, magnesium: 20, phosphorus: 37, potassium: 260, sodium: 4, zinc: 0.39
+},
+'莴笋': {
+    calories: 15, protein: 0.8, carbs: 3.3, fat: 0.1, fiber: 1.2, processing: 1,
+    vitaminA: 38, vitaminC: 10.2, vitaminE: 0.22, vitaminB1: 0.03, vitaminB2: 0.03, vitaminB6: 0.05, folate: 46,
+    calcium: 19, iron: 0.4, magnesium: 7, phosphorus: 26, potassium: 175, sodium: 8, zinc: 0.18
+},
+'芹菜': {
+    calories: 14, protein: 0.7, carbs: 3.0, fat: 0.2, fiber: 1.6, processing: 1,
+    vitaminA: 22, vitaminC: 3.1, vitaminE: 0.27, vitaminB1: 0.02, vitaminB2: 0.06, vitaminB6: 0.08, folate: 36,
+    calcium: 40, iron: 0.2, magnesium: 11, phosphorus: 24, potassium: 260, sodium: 80, zinc: 0.13
+},
+'大白菜': {
+    calories: 13, protein: 1.2, carbs: 2.2, fat: 0.2, fiber: 1.0, processing: 1,
+    vitaminA: 9, vitaminC: 27, vitaminE: 0.1, vitaminB1: 0.04, vitaminB2: 0.05, vitaminB6: 0.17, folate: 66,
+    calcium: 77, iron: 0.31, magnesium: 13, phosphorus: 29, potassium: 238, sodium: 9, zinc: 0.19
+},
+'小白菜': {
+    calories: 16, protein: 1.5, carbs: 2.8, fat: 0.2, fiber: 1.2, processing: 1,
+    vitaminA: 399, vitaminC: 35, vitaminE: 0.8, vitaminB1: 0.06, vitaminB2: 0.07, vitaminB6: 0.16, folate: 69,
+    calcium: 102, iron: 2.1, magnesium: 17, phosphorus: 37, potassium: 282, sodium: 7, zinc: 0.25
+},
+'生菜': {
+    calories: 15, protein: 1.4, carbs: 2.9, fat: 0.2, fiber: 1.3, processing: 1,
+    vitaminA: 166, vitaminC: 9.2, vitaminE: 0.18, vitaminB1: 0.07, vitaminB2: 0.08, vitaminB6: 0.09, folate: 73,
+    calcium: 36, iron: 0.86, magnesium: 13, phosphorus: 29, potassium: 238, sodium: 5, zinc: 0.18
+},
 
+// === 新增肉类 ===
+'猪肉(瘦)': {
+    calories: 143, protein: 21.2, carbs: 0, fat: 5.9, fiber: 0, processing: 1,
+    vitaminA: 1, vitaminC: 0.7, vitaminE: 0.2, vitaminB1: 0.57, vitaminB2: 0.25, vitaminB6: 0.42, folate: 7,
+    calcium: 8, iron: 1.1, magnesium: 22, phosphorus: 211, potassium: 340, sodium: 54, zinc: 2.4
+},
+'猪肉(肥瘦)': {
+    calories: 225, protein: 16.9, carbs: 0, fat: 17.2, fiber: 0, processing: 1,
+    vitaminA: 1, vitaminC: 0.6, vitaminE: 0.32, vitaminB1: 0.42, vitaminB2: 0.18, vitaminB6: 0.32, folate: 5,
+    calcium: 6, iron: 0.8, magnesium: 18, phosphorus: 159, potassium: 270, sodium: 62, zinc: 1.8
+},
+'牛排': {
+    calories: 252, protein: 25.9, carbs: 0, fat: 16.2, fiber: 0, processing: 1,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.43, vitaminB1: 0.08, vitaminB2: 0.2, vitaminB6: 0.36, folate: 9,
+    calcium: 8, iron: 2.6, magnesium: 23, phosphorus: 195, potassium: 330, sodium: 59, zinc: 5.5
+},
+'牛肉(瘦)': {
+    calories: 177, protein: 26.1, carbs: 0, fat: 7.9, fiber: 0, processing: 1,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.36, vitaminB1: 0.06, vitaminB2: 0.21, vitaminB6: 0.34, folate: 9,
+    calcium: 8, iron: 2.5, magnesium: 22, phosphorus: 178, potassium: 320, sodium: 56, zinc: 5.1
+},
+'羊肉': {
+    calories: 276, protein: 25.5, carbs: 0, fat: 19.2, fiber: 0, processing: 1,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.2, vitaminB1: 0.12, vitaminB2: 0.25, vitaminB6: 0.14, folate: 20,
+    calcium: 16, iron: 1.9, magnesium: 25, phosphorus: 175, potassium: 350, sodium: 70, zinc: 3.9
+},
+'鸡腿肉': {
+    calories: 177, protein: 24.3, carbs: 0, fat: 9.3, fiber: 0, processing: 1,
+    vitaminA: 21, vitaminC: 0, vitaminE: 0.27, vitaminB1: 0.08, vitaminB2: 0.2, vitaminB6: 0.35, folate: 10,
+    calcium: 13, iron: 1.0, magnesium: 26, phosphorus: 195, potassium: 270, sodium: 85, zinc: 1.9
+},
+'鸭肉': {
+    calories: 195, protein: 18.6, carbs: 0, fat: 13.2, fiber: 0, processing: 1,
+    vitaminA: 32, vitaminC: 0, vitaminE: 0.7, vitaminB1: 0.27, vitaminB2: 0.21, vitaminB6: 0.2, folate: 20,
+    calcium: 11, iron: 2.1, magnesium: 17, phosphorus: 203, potassium: 271, sodium: 65, zinc: 1.8
+},
+'鹅肉': {
+    calories: 161, protein: 22.8, carbs: 0, fat: 7.1, fiber: 0, processing: 1,
+    vitaminA: 16, vitaminC: 0, vitaminE: 0.4, vitaminB1: 0.1, vitaminB2: 0.38, vitaminB6: 0.46, folate: 9,
+    calcium: 12, iron: 2.8, magnesium: 29, phosphorus: 302, potassium: 420, sodium: 78, zinc: 2.5
+},
+'兔肉': {
+    calories: 136, protein: 20.1, carbs: 0, fat: 5.6, fiber: 0, processing: 1,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.41, vitaminB1: 0.08, vitaminB2: 0.12, vitaminB6: 0.3, folate: 10,
+    calcium: 13, iron: 1.6, magnesium: 21, phosphorus: 213, potassium: 330, sodium: 41, zinc: 1.4
+},
+'猪肝': {
+    calories: 134, protein: 21.4, carbs: 3.8, fat: 3.7, fiber: 0, processing: 1,
+    vitaminA: 6500, vitaminC: 25.3, vitaminE: 0.6, vitaminB1: 0.26, vitaminB2: 2.8, vitaminB6: 0.76, folate: 290,
+    calcium: 10, iron: 23.3, magnesium: 18, phosphorus: 288, potassium: 273, sodium: 87, zinc: 6.5
+},
+
+// === 新增水产品 ===
+'带鱼': {
+    calories: 108, protein: 19.4, carbs: 0, fat: 3.2, fiber: 0, processing: 1,
+    vitaminA: 40, vitaminC: 0, vitaminE: 0.5, vitaminB1: 0.09, vitaminB2: 0.1, vitaminB6: 0.4, folate: 5,
+    calcium: 20, iron: 0.3, magnesium: 27, phosphorus: 230, potassium: 330, sodium: 90, zinc: 0.7
+},
+'黄鱼': {
+    calories: 110, protein: 19.8, carbs: 0, fat: 3.0, fiber: 0, processing: 1,
+    vitaminA: 32, vitaminC: 0, vitaminE: 0.6, vitaminB1: 0.11, vitaminB2: 0.07, vitaminB6: 0.37, folate: 8,
+    calcium: 19, iron: 0.4, magnesium: 25, phosphorus: 218, potassium: 310, sodium: 78, zinc: 0.5
+},
+'草鱼': {
+    calories: 90, protein: 17.5, carbs: 0, fat: 1.8, fiber: 0, processing: 1,
+    vitaminA: 15, vitaminC: 1.0, vitaminE: 0.4, vitaminB1: 0.09, vitaminB2: 0.06, vitaminB6: 0.13, folate: 14,
+    calcium: 30, iron: 1.1, magnesium: 25, phosphorus: 244, potassium: 302, sodium: 48, zinc: 0.9
+},
+'鲤鱼': {
+    calories: 127, protein: 17.5, carbs: 0, fat: 5.6, fiber: 0, processing: 1,
+    vitaminA: 22, vitaminC: 1.6, vitaminE: 1.0, vitaminB1: 0.14, vitaminB2: 0.05, vitaminB6: 0.19, folate: 9,
+    calcium: 52, iron: 1.2, magnesium: 30, phosphorus: 260, potassium: 314, sodium: 45, zinc: 1.5
+},
+'鲫鱼': {
+    calories: 108, protein: 18.8, carbs: 0, fat: 3.1, fiber: 0, processing: 1,
+    vitaminA: 12, vitaminC: 1.4, vitaminE: 0.8, vitaminB1: 0.1, vitaminB2: 0.11, vitaminB6: 0.16, folate: 15,
+    calcium: 90, iron: 1.0, magnesium: 28, phosphorus: 234, potassium: 278, sodium: 59, zinc: 1.1
+},
+'龙虾': {
+    calories: 89, protein: 18.8, carbs: 0.5, fat: 0.9, fiber: 0, processing: 1,
+    vitaminA: 8, vitaminC: 0, vitaminE: 1.9, vitaminB1: 0.05, vitaminB2: 0.07, vitaminB6: 0.09, folate: 12,
+    calcium: 52, iron: 0.5, magnesium: 32, phosphorus: 185, potassium: 252, sodium: 253, zinc: 2.6
+},
+'蟹肉': {
+    calories: 83, protein: 17.2, carbs: 0, fat: 1.5, fiber: 0, processing: 1,
+    vitaminA: 8, vitaminC: 7.6, vitaminE: 1.5, vitaminB1: 0.05, vitaminB2: 0.08, vitaminB6: 0.15, folate: 50,
+    calcium: 50, iron: 0.7, magnesium: 28, phosphorus: 187, potassium: 262, sodium: 311, zinc: 3.5
+},
+'扇贝': {
+    calories: 88, protein: 16.8, carbs: 3.2, fat: 0.8, fiber: 0, processing: 1,
+    vitaminA: 10, vitaminC: 0, vitaminE: 0.9, vitaminB1: 0.02, vitaminB2: 0.2, vitaminB6: 0.1, folate: 12,
+    calcium: 9, iron: 0.6, magnesium: 40, phosphorus: 236, potassium: 268, sodium: 217, zinc: 1.4
+},
+'章鱼': {
+    calories: 82, protein: 14.9, carbs: 2.2, fat: 1.2, fiber: 0, processing: 1,
+    vitaminA: 5, vitaminC: 5.3, vitaminE: 0.7, vitaminB1: 0.03, vitaminB2: 0.04, vitaminB6: 0.36, folate: 16,
+    calcium: 53, iron: 5.3, magnesium: 30, phosphorus: 186, potassium: 350, sodium: 230, zinc: 1.7
+},
+'鱿鱼': {
+    calories: 92, protein: 15.6, carbs: 3.1, fat: 1.4, fiber: 0, processing: 1,
+    vitaminA: 9, vitaminC: 3.9, vitaminE: 0.6, vitaminB1: 0.03, vitaminB2: 0.27, vitaminB6: 0.06, folate: 5,
+    calcium: 32, iron: 0.7, magnesium: 33, phosphorus: 221, potassium: 246, sodium: 239, zinc: 1.5
+},
+
+// === 新增豆制品 ===
+'豆腐干': {
+    calories: 143, protein: 17.5, carbs: 8.1, fat: 5.0, fiber: 1.2, processing: 3,
+    vitaminA: 32, vitaminC: 0, vitaminE: 0.02, vitaminB1: 0.08, vitaminB2: 0.12, vitaminB6: 0.11, folate: 19,
+    calcium: 680, iron: 6.5, magnesium: 60, phosphorus: 102, potassium: 140, sodium: 11, zinc: 0.9
+},
+'豆腐皮': {
+    calories: 376, protein: 48.7, carbs: 12.8, fat: 14.5, fiber: 3.5, processing: 3,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.05, vitaminB1: 0.19, vitaminB2: 0.6, vitaminB6: 0.2, folate: 93,
+    calcium: 510, iron: 9.9, magnesium: 43, phosphorus: 214, potassium: 148, sodium: 15, zinc: 2.1
+},
+'豆浆': {
+    calories: 33, protein: 3.0, carbs: 2.5, fat: 1.5, fiber: 0.3, processing: 2,
+    vitaminA: 1, vitaminC: 0, vitaminE: 0.35, vitaminB1: 0.16, vitaminB2: 0.07, vitaminB6: 0.07, folate: 43,
+    calcium: 25, iron: 0.9, magnesium: 19, phosphorus: 52, potassium: 141, sodium: 12, zinc: 0.3
+},
+'豆豉': {
+    calories: 201, protein: 18.3, carbs: 10.2, fat: 9.8, fiber: 2.5, processing: 4,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.4, vitaminB1: 0.24, vitaminB2: 0.53, vitaminB6: 0.19, folate: 172,
+    calcium: 55, iron: 5.8, magnesium: 75, phosphorus: 100, potassium: 412, sodium: 1200, zinc: 1.2
+},
+'绿豆': {
+    calories: 347, protein: 23.9, carbs: 62.6, fat: 1.2, fiber: 16.3, processing: 1,
+    vitaminA: 2, vitaminC: 1.0, vitaminE: 0.5, vitaminB1: 0.62, vitaminB2: 0.23, vitaminB6: 0.38, folate: 625,
+    calcium: 84, iron: 6.7, magnesium: 189, phosphorus: 367, potassium: 1246, sodium: 15, zinc: 2.7
+},
+'红豆': {
+    calories: 337, protein: 22.5, carbs: 61.3, fat: 0.8, fiber: 15.2, processing: 1,
+    vitaminA: 0, vitaminC: 4.5, vitaminE: 0.21, vitaminB1: 0.61, vitaminB2: 0.22, vitaminB6: 0.4, folate: 394,
+    calcium: 83, iron: 7.0, magnesium: 138, phosphorus: 406, potassium: 1254, sodium: 12, zinc: 2.8
+},
+'豌豆': {
+    calories: 81, protein: 5.4, carbs: 14.5, fat: 0.4, fiber: 5.1, processing: 1,
+    vitaminA: 38, vitaminC: 40, vitaminE: 0.13, vitaminB1: 0.27, vitaminB2: 0.13, vitaminB6: 0.17, folate: 65,
+    calcium: 25, iron: 1.5, magnesium: 33, phosphorus: 108, potassium: 244, sodium: 5, zinc: 1.2
+},
+'蚕豆': {
+    calories: 110, protein: 7.6, carbs: 19.7, fat: 0.4, fiber: 5.4, processing: 1,
+    vitaminA: 3, vitaminC: 1.4, vitaminE: 0.05, vitaminB1: 0.14, vitaminB2: 0.09, vitaminB6: 0.14, folate: 104,
+    calcium: 36, iron: 1.7, magnesium: 43, phosphorus: 125, potassium: 332, sodium: 13, zinc: 1.0
+},
+'腐竹': {
+    calories: 446, protein: 52.6, carbs: 23.8, fat: 15.5, fiber: 2.6, processing: 3,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.11, vitaminB1: 0.35, vitaminB2: 0.9, vitaminB6: 0.3, folate: 173,
+    calcium: 460, iron: 9.2, magnesium: 67, phosphorus: 286, potassium: 213, sodium: 13, zinc: 3.4
+},
+'香干': {
+    calories: 199, protein: 20.2, carbs: 10.2, fat: 9.9, fiber: 1.5, processing: 3,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.02, vitaminB1: 0.16, vitaminB2: 0.24, vitaminB6: 0.08, folate: 15,
+    calcium: 350, iron: 4.7, magnesium: 48, phosphorus: 99, potassium: 130, sodium: 312, zinc: 1.1
+},
+
+// === 新增谷物/主食类 ===
+'糙米': {
+    calories: 362, protein: 7.5, carbs: 76.2, fat: 2.7, fiber: 3.5, processing: 1,
+    vitaminA: 0, vitaminC: 0, vitaminE: 1.2, vitaminB1: 0.4, vitaminB2: 0.08, vitaminB6: 0.6, folate: 20,
+    calcium: 33, iron: 1.8, magnesium: 143, phosphorus: 333, potassium: 268, sodium: 8, zinc: 2.0
+},
+'黑米': {
+    calories: 356, protein: 8.5, carbs: 75.2, fat: 3.3, fiber: 4.7, processing: 1,
+    vitaminA: 0, vitaminC: 0, vitaminE: 1.0, vitaminB1: 0.45, vitaminB2: 0.28, vitaminB6: 0.5, folate: 18,
+    calcium: 41, iron: 3.9, magnesium: 138, phosphorus: 298, potassium: 288, sodium: 10, zinc: 5.5
+},
+'紫米': {
+    calories: 349, protein: 7.9, carbs: 76.1, fat: 2.2, fiber: 4.0, processing: 1,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.8, vitaminB1: 0.39, vitaminB2: 0.21, vitaminB6: 0.54, folate: 16,
+    calcium: 33, iron: 2.2, magnesium: 95, phosphorus: 284, potassium: 282, sodium: 5, zinc: 2.2
+},
+'大米': {
+    calories: 358, protein: 6.8, carbs: 79, fat: 0.6, fiber: 1.3, processing: 2,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.11, vitaminB1: 0.07, vitaminB2: 0.05, vitaminB6: 0.15, folate: 12,
+    calcium: 28, iron: 0.8, magnesium: 25, phosphorus: 115, potassium: 115, sodium: 5, zinc: 1.2
+},
+'小麦粉': {
+    calories: 340, protein: 10.3, carbs: 73.6, fat: 1.1, fiber: 3.1, processing: 2,
+    vitaminA: 0, vitaminC: 0, vitaminE: 1.0, vitaminB1: 0.45, vitaminB2: 0.22, vitaminB6: 0.2, folate: 44,
+    calcium: 34, iron: 3.9, magnesium: 120, phosphorus: 346, potassium: 405, sodium: 2, zinc: 2.6
+},
+'荞麦': {
+    calories: 343, protein: 13.3, carbs: 71.5, fat: 3.4, fiber: 10.0, processing: 1,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.8, vitaminB1: 0.4, vitaminB2: 0.43, vitaminB6: 0.35, folate: 54,
+    calcium: 41, iron: 4.1, magnesium: 231, phosphorus: 337, potassium: 577, sodium: 1, zinc: 2.4
+},
+'燕麦粥': {
+    calories: 68, protein: 2.4, carbs: 12.0, fat: 1.4, fiber: 1.7, processing: 2,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.13, vitaminB1: 0.15, vitaminB2: 0.04, vitaminB6: 0.03, folate: 8,
+    calcium: 18, iron: 0.7, magnesium: 32, phosphorus: 82, potassium: 80, sodium: 2, zinc: 0.7
+},
+'意大利面': {
+    calories: 158, protein: 5.8, carbs: 31.0, fat: 0.9, fiber: 1.8, processing: 3,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.1, vitaminB1: 0.2, vitaminB2: 0.13, vitaminB6: 0.05, folate: 14,
+    calcium: 21, iron: 1.3, magnesium: 22, phosphorus: 63, potassium: 58, sodium: 6, zinc: 0.8
+},
+'苏打饼干': {
+    calories: 421, protein: 9.1, carbs: 73.0, fat: 9.9, fiber: 2.8, processing: 4,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.3, vitaminB1: 0.28, vitaminB2: 0.1, vitaminB6: 0.03, folate: 28,
+    calcium: 104, iron: 2.8, magnesium: 31, phosphorus: 115, potassium: 131, sodium: 635, zinc: 0.9
+},
+'奶油蛋糕': {
+    calories: 321, protein: 5.0, carbs: 36.3, fat: 17.8, fiber: 0.5, processing: 5,
+    vitaminA: 160, vitaminC: 0.1, vitaminE: 1.0, vitaminB1: 0.2, vitaminB2: 0.32, vitaminB6: 0.05, folate: 41,
+    calcium: 83, iron: 1.6, magnesium: 15, phosphorus: 166, potassium: 98, sodium: 360, zinc: 0.5
+},
+
+// === 新增水果类 ===
+'芒果': {
+    calories: 60, protein: 0.8, carbs: 15, fat: 0.4, fiber: 1.6, processing: 1,
+    vitaminA: 54, vitaminC: 36.4, vitaminE: 0.9, vitaminB1: 0.03, vitaminB2: 0.04, vitaminB6: 0.12, folate: 14,
+    calcium: 11, iron: 0.16, magnesium: 10, phosphorus: 14, potassium: 168, sodium: 1, zinc: 0.09
+},
+'石榴': {
+    calories: 83, protein: 1.7, carbs: 18.7, fat: 1.2, fiber: 4, processing: 1,
+    vitaminA: 0, vitaminC: 10.2, vitaminE: 0.6, vitaminB1: 0.07, vitaminB2: 0.05, vitaminB6: 0.08, folate: 38,
+    calcium: 10, iron: 0.3, magnesium: 12, phosphorus: 36, potassium: 236, sodium: 3, zinc: 0.35
+},
+'荔枝': {
+    calories: 66, protein: 0.8, carbs: 16.5, fat: 0.4, fiber: 1.3, processing: 1,
+    vitaminA: 0, vitaminC: 71.5, vitaminE: 0.07, vitaminB1: 0.01, vitaminB2: 0.07, vitaminB6: 0.1, folate: 14,
+    calcium: 5, iron: 0.31, magnesium: 10, phosphorus: 31, potassium: 171, sodium: 1, zinc: 0.07
+},
+'龙眼': {
+    calories: 60, protein: 1.3, carbs: 15.1, fat: 0.1, fiber: 1.1, processing: 1,
+    vitaminA: 0, vitaminC: 84, vitaminE: 0.02, vitaminB1: 0.03, vitaminB2: 0.14, vitaminB6: 0.18, folate: 14,
+    calcium: 1, iron: 0.13, magnesium: 10, phosphorus: 21, potassium: 266, sodium: 3, zinc: 0.05
+},
+'杨梅': {
+    calories: 43, protein: 0.8, carbs: 10.6, fat: 0.2, fiber: 1.7, processing: 1,
+    vitaminA: 6, vitaminC: 28, vitaminE: 0.35, vitaminB1: 0.02, vitaminB2: 0.03, vitaminB6: 0.05, folate: 6,
+    calcium: 23, iron: 0.27, magnesium: 10, phosphorus: 12, potassium: 119, sodium: 1, zinc: 0.14
+},
+'樱桃': {
+    calories: 50, protein: 1, carbs: 12.2, fat: 0.3, fiber: 1.6, processing: 1,
+    vitaminA: 64, vitaminC: 7, vitaminE: 0.07, vitaminB1: 0.03, vitaminB2: 0.03, vitaminB6: 0.05, folate: 4,
+    calcium: 13, iron: 0.36, magnesium: 11, phosphorus: 21, potassium: 222, sodium: 0, zinc: 0.07
+},
+'杏': {
+    calories: 48, protein: 1.4, carbs: 11.1, fat: 0.4, fiber: 2, processing: 1,
+    vitaminA: 96, vitaminC: 10, vitaminE: 0.89, vitaminB1: 0.03, vitaminB2: 0.04, vitaminB6: 0.05, folate: 9,
+    calcium: 14, iron: 0.4, magnesium: 10, phosphorus: 23, potassium: 259, sodium: 1, zinc: 0.2
+},
+'李子': {
+    calories: 46, protein: 0.7, carbs: 11.4, fat: 0.3, fiber: 1.4, processing: 1,
+    vitaminA: 17, vitaminC: 9.5, vitaminE: 0.26, vitaminB1: 0.03, vitaminB2: 0.03, vitaminB6: 0.03, folate: 5,
+    calcium: 6, iron: 0.17, magnesium: 7, phosphorus: 16, potassium: 157, sodium: 0, zinc: 0.1
+},
+'葡萄柚': {
+    calories: 42, protein: 0.8, carbs: 10.7, fat: 0.1, fiber: 1.6, processing: 1,
+    vitaminA: 58, vitaminC: 31.2, vitaminE: 0.13, vitaminB1: 0.04, vitaminB2: 0.02, vitaminB6: 0.04, folate: 13,
+    calcium: 22, iron: 0.09, magnesium: 9, phosphorus: 18, potassium: 135, sodium: 0, zinc: 0.07
+},
+'火龙果': {
+    calories: 60, protein: 1.2, carbs: 12.9, fat: 0.4, fiber: 2.5, processing: 1,
+    vitaminA: 0, vitaminC: 8, vitaminE: 0.4, vitaminB1: 0.04, vitaminB2: 0.05, vitaminB6: 0.16, folate: 3,
+    calcium: 8, iron: 0.55, magnesium: 40, phosphorus: 22, potassium: 272, sodium: 0, zinc: 0.12
+},
+
+// === 新增坚果类 ===
+'杏仁': {
+    calories: 579, protein: 21.2, carbs: 21.7, fat: 49.9, fiber: 12.5, processing: 1,
+    vitaminA: 0, vitaminC: 0, vitaminE: 25.6, vitaminB1: 0.2, vitaminB2: 1.14, vitaminB6: 0.14, folate: 44,
+    calcium: 269, iron: 3.7, magnesium: 270, phosphorus: 481, potassium: 733, sodium: 1, zinc: 3.1
+},
+'榛子': {
+    calories: 628, protein: 15, carbs: 17, fat: 60.8, fiber: 9.7, processing: 1,
+    vitaminA: 1, vitaminC: 6.3, vitaminE: 15, vitaminB1: 0.64, vitaminB2: 0.11, vitaminB6: 0.56, folate: 113,
+    calcium: 114, iron: 4.7, magnesium: 163, phosphorus: 290, potassium: 680, sodium: 0, zinc: 2.5
+},
+'栗子': {
+    calories: 213, protein: 4.3, carbs: 45.5, fat: 2.2, fiber: 8.1, processing: 1,
+    vitaminA: 1, vitaminC: 40.2, vitaminE: 0.5, vitaminB1: 0.24, vitaminB2: 0.16, vitaminB6: 0.35, folate: 68,
+    calcium: 27, iron: 0.9, magnesium: 30, phosphorus: 96, potassium: 715, sodium: 3, zinc: 0.5
+},
+'松子': {
+    calories: 673, protein: 13.7, carbs: 13.1, fat: 68.4, fiber: 3.7, processing: 1,
+    vitaminA: 1, vitaminC: 0.8, vitaminE: 9.3, vitaminB1: 0.36, vitaminB2: 0.22, vitaminB6: 0.09, folate: 34,
+    calcium: 16, iron: 5.5, magnesium: 251, phosphorus: 575, potassium: 597, sodium: 2, zinc: 6.5
+},
+'葵花籽': {
+    calories: 584, protein: 20.8, carbs: 20, fat: 51.5, fiber: 8.6, processing: 1,
+    vitaminA: 3, vitaminC: 1.4, vitaminE: 35.2, vitaminB1: 1.48, vitaminB2: 0.36, vitaminB6: 1.35, folate: 227,
+    calcium: 78, iron: 5.3, magnesium: 325, phosphorus: 660, potassium: 645, sodium: 9, zinc: 5
+},
+'南瓜子': {
+    calories: 559, protein: 30.2, carbs: 10.7, fat: 49.1, fiber: 6, processing: 1,
+    vitaminA: 16, vitaminC: 1.9, vitaminE: 2.2, vitaminB1: 0.27, vitaminB2: 0.15, vitaminB6: 0.14, folate: 58,
+    calcium: 46, iron: 8.8, magnesium: 550, phosphorus: 1230, potassium: 809, sodium: 7, zinc: 7.8
+},
+'开心果': {
+    calories: 560, protein: 20.2, carbs: 27.5, fat: 45.4, fiber: 10.6, processing: 1,
+    vitaminA: 26, vitaminC: 5.6, vitaminE: 2.3, vitaminB1: 0.87, vitaminB2: 0.16, vitaminB6: 1.7, folate: 51,
+    calcium: 105, iron: 3.9, magnesium: 121, phosphorus: 490, potassium: 1025, sodium: 1, zinc: 2.2
+},
+'腰果': {
+    calories: 553, protein: 18.2, carbs: 30.2, fat: 43.9, fiber: 3.3, processing: 1,
+    vitaminA: 0, vitaminC: 0.5, vitaminE: 0.9, vitaminB1: 0.42, vitaminB2: 0.06, vitaminB6: 0.42, folate: 25,
+    calcium: 37, iron: 6.7, magnesium: 292, phosphorus: 593, potassium: 660, sodium: 12, zinc: 5.8
+},
+'夏威夷果': {
+    calories: 718, protein: 7.9, carbs: 13.8, fat: 75.8, fiber: 8.6, processing: 1,
+    vitaminA: 0, vitaminC: 1.1, vitaminE: 0.6, vitaminB1: 0.34, vitaminB2: 0.12, vitaminB6: 0.28, folate: 22,
+    calcium: 40, iron: 2.7, magnesium: 130, phosphorus: 188, potassium: 368, sodium: 5, zinc: 1.3
+},
+'瓜子': {
+    calories: 562, protein: 19.4, carbs: 19.8, fat: 49.8, fiber: 8.1, processing: 1,
+    vitaminA: 2, vitaminC: 1.3, vitaminE: 33.8, vitaminB1: 1.44, vitaminB2: 0.35, vitaminB6: 1.24, folate: 218,
+    calcium: 75, iron: 5.1, magnesium: 314, phosphorus: 645, potassium: 632, sodium: 9, zinc: 4.8
+},
+
+// === 新增奶制品类 ===
+'酸奶(低脂)': {
+    calories: 56, protein: 5.7, carbs: 7.8, fat: 0.4, fiber: 0, processing: 3,
+    vitaminA: 20, vitaminC: 1.2, vitaminE: 0.03, vitaminB1: 0.08, vitaminB2: 0.24, vitaminB6: 0.08, folate: 18,
+    calcium: 183, iron: 0.11, magnesium: 17, phosphorus: 144, potassium: 234, sodium: 73, zinc: 0.9
+},
+'奶酪': {
+    calories: 402, protein: 25, carbs: 1.3, fat: 33, fiber: 0, processing: 3,
+    vitaminA: 280, vitaminC: 0, vitaminE: 0.31, vitaminB1: 0.03, vitaminB2: 0.43, vitaminB6: 0.08, folate: 27,
+    calcium: 721, iron: 0.68, magnesium: 28, phosphorus: 512, potassium: 98, sodium: 621, zinc: 3.1
+},
+'奶油': {
+    calories: 340, protein: 2.1, carbs: 2.8, fat: 36.2, fiber: 0, processing: 3,
+    vitaminA: 428, vitaminC: 0.5, vitaminE: 0.86, vitaminB1: 0.03, vitaminB2: 0.14, vitaminB6: 0.04, folate: 6,
+    calcium: 73, iron: 0.1, magnesium: 7, phosphorus: 68, potassium: 104, sodium: 98, zinc: 0.3
+},
+'黄油': {
+    calories: 717, protein: 0.9, carbs: 0.1, fat: 81.1, fiber: 0, processing: 3,
+    vitaminA: 684, vitaminC: 0, vitaminE: 2.32, vitaminB1: 0.01, vitaminB2: 0.03, vitaminB6: 0.01, folate: 3,
+    calcium: 24, iron: 0.02, magnesium: 2, phosphorus: 24, potassium: 24, sodium: 714, zinc: 0.1
+},
+'牛奶(全脂)': {
+    calories: 61, protein: 3.2, carbs: 4.8, fat: 3.3, fiber: 0, processing: 2,
+    vitaminA: 46, vitaminC: 0, vitaminE: 0.06, vitaminB1: 0.05, vitaminB2: 0.18, vitaminB6: 0.04, folate: 5,
+    calcium: 113, iron: 0.03, magnesium: 10, phosphorus: 91, potassium: 143, sodium: 43, zinc: 0.4
+},
+'牛奶(脱脂)': {
+    calories: 34, protein: 3.4, carbs: 4.8, fat: 0.1, fiber: 0, processing: 2,
+    vitaminA: 10, vitaminC: 0, vitaminE: 0.01, vitaminB1: 0.04, vitaminB2: 0.18, vitaminB6: 0.04, folate: 5,
+    calcium: 122, iron: 0.03, magnesium: 11, phosphorus: 95, potassium: 156, sodium: 44, zinc: 0.4
+},
+'冰淇淋': {
+    calories: 207, protein: 3.5, carbs: 24, fat: 11, fiber: 0.5, processing: 4,
+    vitaminA: 107, vitaminC: 0.6, vitaminE: 0.44, vitaminB1: 0.04, vitaminB2: 0.19, vitaminB6: 0.07, folate: 6,
+    calcium: 128, iron: 0.7, magnesium: 14, phosphorus: 105, potassium: 199, sodium: 80, zinc: 0.7
+},
+'炼乳': {
+    calories: 321, protein: 7.9, carbs: 54.4, fat: 8, fiber: 0, processing: 4,
+    vitaminA: 85, vitaminC: 1.9, vitaminE: 0.16, vitaminB1: 0.11, vitaminB2: 0.42, vitaminB6: 0.08, folate: 9,
+    calcium: 284, iron: 0.2, magnesium: 26, phosphorus: 230, potassium: 370, sodium: 127, zinc: 1
+},
+
+// === 新增调味品类 ===
+'酱油': {
+    calories: 53, protein: 5.2, carbs: 5.6, fat: 0.1, fiber: 0.8, processing: 4,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0, vitaminB1: 0.02, vitaminB2: 0.18, vitaminB6: 0.07, folate: 15,
+    calcium: 20, iron: 2.4, magnesium: 40, phosphorus: 86, potassium: 235, sodium: 5576, zinc: 0.4
+},
+'醋': {
+    calories: 18, protein: 0, carbs: 0.9, fat: 0, fiber: 0, processing: 3,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0, vitaminB1: 0, vitaminB2: 0, vitaminB6: 0, folate: 0,
+    calcium: 8, iron: 0.2, magnesium: 5, phosphorus: 8, potassium: 73, sodium: 5, zinc: 0.04
+},
+'番茄酱': {
+    calories: 82, protein: 1.7, carbs: 20.1, fat: 0.5, fiber: 1.1, processing: 4,
+    vitaminA: 171, vitaminC: 15.1, vitaminE: 1.07, vitaminB1: 0.06, vitaminB2: 0.11, vitaminB6: 0.09, folate: 10,
+    calcium: 27, iron: 0.9, magnesium: 14, phosphorus: 33, potassium: 362, sodium: 883, zinc: 0.2
+},
+'蜂蜜': {
+    calories: 304, protein: 0.3, carbs: 82.4, fat: 0, fiber: 0.2, processing: 1,
+    vitaminA: 0, vitaminC: 0.5, vitaminE: 0, vitaminB1: 0, vitaminB2: 0.04, vitaminB6: 0.02, folate: 2,
+    calcium: 6, iron: 0.42, magnesium: 2, phosphorus: 4, potassium: 52, sodium: 4, zinc: 0.22
+},
+'辣椒酱': {
+    calories: 40, protein: 1.3, carbs: 8.7, fat: 0.2, fiber: 1.5, processing: 4,
+    vitaminA: 96, vitaminC: 12, vitaminE: 1.03, vitaminB1: 0.04, vitaminB2: 0.08, vitaminB6: 0.17, folate: 9,
+    calcium: 14, iron: 0.64, magnesium: 13, phosphorus: 24, potassium: 153, sodium: 1078, zinc: 0.2
+},
+'芥末': {
+    calories: 67, protein: 4.3, carbs: 5.4, fat: 4.2, fiber: 1.5, processing: 3,
+    vitaminA: 7, vitaminC: 21, vitaminE: 2.01, vitaminB1: 0.08, vitaminB2: 0.12, vitaminB6: 0.15, folate: 76,
+    calcium: 172, iron: 1.46, magnesium: 27, phosphorus: 65, potassium: 152, sodium: 1176, zinc: 0.2
+},
+'花生酱': {
+    calories: 588, protein: 25, carbs: 20, fat: 50, fiber: 6, processing: 4,
+    vitaminA: 0, vitaminC: 0, vitaminE: 8.9, vitaminB1: 0.15, vitaminB2: 0.13, vitaminB6: 0.44, folate: 87,
+    calcium: 49, iron: 1.9, magnesium: 168, phosphorus: 335, potassium: 649, sodium: 426, zinc: 2.9
+},
+'沙拉酱': {
+    calories: 430, protein: 1.1, carbs: 7.8, fat: 45, fiber: 0, processing: 5,
+    vitaminA: 46, vitaminC: 0, vitaminE: 10.5, vitaminB1: 0.02, vitaminB2: 0.04, vitaminB6: 0.03, folate: 12,
+    calcium: 22, iron: 0.4, magnesium: 5, phosphorus: 19, potassium: 19, sodium: 690, zinc: 0.1
+},
+'腐乳': {
+    calories: 198, protein: 12.4, carbs: 3.2, fat: 15.2, fiber: 0.5, processing: 4,
+    vitaminA: 18, vitaminC: 0, vitaminE: 0.01, vitaminB1: 0.04, vitaminB2: 0.42, vitaminB6: 0.07, folate: 8,
+    calcium: 312, iron: 4.1, magnesium: 21, phosphorus: 76, potassium: 92, sodium: 2841, zinc: 1.2
+},
+'甜面酱': {
+    calories: 172, protein: 7.3, carbs: 28.7, fat: 3.4, fiber: 1.8, processing: 4,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.09, vitaminB1: 0.15, vitaminB2: 0.31, vitaminB6: 0.16, folate: 52,
+    calcium: 46, iron: 3.1, magnesium: 31, phosphorus: 86, potassium: 180, sodium: 2371, zinc: 1.1
+},
+
+// === 新增饮料类 ===
+'橙汁': {
+    calories: 45, protein: 0.7, carbs: 10.4, fat: 0.2, fiber: 0.2, processing: 2,
+    vitaminA: 10, vitaminC: 50, vitaminE: 0.2, vitaminB1: 0.1, vitaminB2: 0.03, vitaminB6: 0.05, folate: 30,
+    calcium: 11, iron: 0.2, magnesium: 11, phosphorus: 17, potassium: 200, sodium: 1, zinc: 0.08
+},
+'可乐': {
+    calories: 42, protein: 0, carbs: 10.6, fat: 0, fiber: 0, processing: 5,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0, vitaminB1: 0, vitaminB2: 0, vitaminB6: 0, folate: 0,
+    calcium: 5, iron: 0.1, magnesium: 1, phosphorus: 21, potassium: 1, sodium: 5, zinc: 0.01
+},
+'绿茶': {
+    calories: 1, protein: 0, carbs: 0.3, fat: 0, fiber: 0, processing: 2,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0, vitaminB1: 0, vitaminB2: 0.01, vitaminB6: 0, folate: 0,
+    calcium: 0, iron: 0.02, magnesium: 1, phosphorus: 1, potassium: 8, sodium: 1, zinc: 0.01
+},
+'啤酒': {
+    calories: 43, protein: 0.5, carbs: 3.6, fat: 0, fiber: 0, processing: 3,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0, vitaminB1: 0.01, vitaminB2: 0.09, vitaminB6: 0.07, folate: 6,
+    calcium: 4, iron: 0.02, magnesium: 6, phosphorus: 14, potassium: 27, sodium: 4, zinc: 0.01
+},
+'红酒': {
+    calories: 83, protein: 0.1, carbs: 2.7, fat: 0, fiber: 0, processing: 2,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0, vitaminB1: 0.01, vitaminB2: 0.01, vitaminB6: 0.04, folate: 1,
+    calcium: 8, iron: 0.5, magnesium: 10, phosphorus: 19, potassium: 127, sodium: 4, zinc: 0.1
+},
+
+// === 新增中式家常菜 ===
+'宫保鸡丁': {
+    calories: 192, protein: 13.2, carbs: 9.8, fat: 11.5, fiber: 1.1, processing: 3,
+    vitaminA: 30, vitaminC: 12, vitaminE: 1.1, vitaminB1: 0.1, vitaminB2: 0.12, vitaminB6: 0.3, folate: 15,
+    calcium: 20, iron: 1.2, magnesium: 32, phosphorus: 170, potassium: 245, sodium: 385, zinc: 1.3
+},
+'麻婆豆腐': {
+    calories: 176, protein: 9.3, carbs: 5.2, fat: 13.4, fiber: 0.8, processing: 3,
+    vitaminA: 15, vitaminC: 5, vitaminE: 0.9, vitaminB1: 0.09, vitaminB2: 0.09, vitaminB6: 0.13, folate: 21,
+    calcium: 247, iron: 1.7, magnesium: 29, phosphorus: 120, potassium: 172, sodium: 498, zinc: 1.1
+},
+'糖醋里脊': {
+    calories: 271, protein: 14.3, carbs: 30.2, fat: 10.5, fiber: 0.5, processing: 4,
+    vitaminA: 6, vitaminC: 3.2, vitaminE: 0.6, vitaminB1: 0.42, vitaminB2: 0.18, vitaminB6: 0.3, folate: 4,
+    calcium: 8, iron: 0.9, magnesium: 19, phosphorus: 148, potassium: 252, sodium: 450, zinc: 1.4
+},
+'鱼香肉丝': {
+    calories: 208, protein: 12.6, carbs: 13.5, fat: 11.8, fiber: 1.3, processing: 3,
+    vitaminA: 68, vitaminC: 15.2, vitaminE: 0.8, vitaminB1: 0.37, vitaminB2: 0.15, vitaminB6: 0.24, folate: 10,
+    calcium: 18, iron: 1.1, magnesium: 21, phosphorus: 143, potassium: 298, sodium: 480, zinc: 1.3
+},
+'红烧肉': {
+    calories: 297, protein: 11.2, carbs: 5.1, fat: 26.4, fiber: 0.3, processing: 3,
+    vitaminA: 3, vitaminC: 1.2, vitaminE: 0.3, vitaminB1: 0.3, vitaminB2: 0.12, vitaminB6: 0.2, folate: 3,
+    calcium: 11, iron: 0.9, magnesium: 16, phosphorus: 109, potassium: 197, sodium: 389, zinc: 1.9
+},
+'水煮鱼': {
+    calories: 179, protein: 16.8, carbs: 3.5, fat: 11.2, fiber: 0.6, processing: 2,
+    vitaminA: 18, vitaminC: 6.2, vitaminE: 1.1, vitaminB1: 0.08, vitaminB2: 0.09, vitaminB6: 0.24, folate: 9,
+    calcium: 28, iron: 0.6, magnesium: 31, phosphorus: 205, potassium: 283, sodium: 510, zinc: 0.9
+},
+'酸辣汤': {
+    calories: 82, protein: 5.7, carbs: 8.2, fat: 3.1, fiber: 1.2, processing: 2,
+    vitaminA: 52, vitaminC: 14.1, vitaminE: 0.9, vitaminB1: 0.06, vitaminB2: 0.11, vitaminB6: 0.14, folate: 29,
+    calcium: 52, iron: 1.2, magnesium: 18, phosphorus: 85, potassium: 184, sodium: 420, zinc: 0.9
+},
+'北京烤鸭': {
+    calories: 302, protein: 17.4, carbs: 0.2, fat: 25.3, fiber: 0, processing: 3,
+    vitaminA: 80, vitaminC: 0, vitaminE: 0.9, vitaminB1: 0.2, vitaminB2: 0.19, vitaminB6: 0.29, folate: 15,
+    calcium: 14, iron: 1.8, magnesium: 21, phosphorus: 198, potassium: 237, sodium: 520, zinc: 1.6
+},
+'回锅肉': {
+    calories: 284, protein: 13.8, carbs: 4.2, fat: 24.1, fiber: 0.7, processing: 3,
+    vitaminA: 47, vitaminC: 26.3, vitaminE: 0.7, vitaminB1: 0.38, vitaminB2: 0.14, vitaminB6: 0.32, folate: 9,
+    calcium: 15, iron: 1.2, magnesium: 19, phosphorus: 135, potassium: 252, sodium: 462, zinc: 1.8
+},
+'清蒸鱼': {
+    calories: 119, protein: 20.3, carbs: 0.2, fat: 4.1, fiber: 0, processing: 1,
+    vitaminA: 38, vitaminC: 1.5, vitaminE: 1.4, vitaminB1: 0.12, vitaminB2: 0.1, vitaminB6: 0.35, folate: 13,
+    calcium: 32, iron: 0.7, magnesium: 32, phosphorus: 265, potassium: 327, sodium: 289, zinc: 0.8
+},
+'红烧排骨': {
+    calories: 271, protein: 18.4, carbs: 7.5, fat: 18.9, fiber: 0.4, processing: 3,
+    vitaminA: 12, vitaminC: 1.8, vitaminE: 0.5, vitaminB1: 0.58, vitaminB2: 0.18, vitaminB6: 0.32, folate: 6,
+    calcium: 29, iron: 1.5, magnesium: 21, phosphorus: 182, potassium: 276, sodium: 538, zinc: 2.6
+},
+
+// === 新增西式家常菜 ===
+'意大利肉酱面': {
+    calories: 183, protein: 9.1, carbs: 24.2, fat: 5.8, fiber: 2.2, processing: 3,
+    vitaminA: 58, vitaminC: 9.8, vitaminE: 1.3, vitaminB1: 0.24, vitaminB2: 0.15, vitaminB6: 0.12, folate: 34,
+    calcium: 49, iron: 1.9, magnesium: 30, phosphorus: 111, potassium: 306, sodium: 392, zinc: 1.2
+},
+'匹萨': {
+    calories: 236, protein: 11.1, carbs: 26.1, fat: 10.4, fiber: 1.8, processing: 4,
+    vitaminA: 140, vitaminC: 2.1, vitaminE: 1.68, vitaminB1: 0.36, vitaminB2: 0.24, vitaminB6: 0.1, folate: 46,
+    calcium: 181, iron: 1.8, magnesium: 25, phosphorus: 214, potassium: 184, sodium: 598, zinc: 1.3
+},
+'汉堡包': {
+    calories: 254, protein: 13.3, carbs: 30.3, fat: 9.9, fiber: 1.6, processing: 4,
+    vitaminA: 8, vitaminC: 1.2, vitaminE: 0.37, vitaminB1: 0.28, vitaminB2: 0.2, vitaminB6: 0.16, folate: 47,
+    calcium: 74, iron: 2.7, magnesium: 27, phosphorus: 140, potassium: 202, sodium: 414, zinc: 1.7
+},
+'炸鸡': {
+    calories: 288, protein: 24.2, carbs: 8.1, fat: 18.4, fiber: 0.4, processing: 4,
+    vitaminA: 40, vitaminC: 0.3, vitaminE: 0.62, vitaminB1: 0.11, vitaminB2: 0.18, vitaminB6: 0.42, folate: 10,
+    calcium: 20, iron: 1.4, magnesium: 27, phosphorus: 204, potassium: 248, sodium: 380, zinc: 1.3
+},
+'沙拉': {
+    calories: 75, protein: 1.5, carbs: 5.8, fat: 5.1, fiber: 1.8, processing: 2,
+    vitaminA: 162, vitaminC: 9.8, vitaminE: 0.5, vitaminB1: 0.07, vitaminB2: 0.06, vitaminB6: 0.11, folate: 78,
+    calcium: 38, iron: 0.8, magnesium: 14, phosphorus: 28, potassium: 217, sodium: 160, zinc: 0.3
+},
+'三明治': {
+    calories: 243, protein: 11.3, carbs: 33.7, fat: 8.1, fiber: 2.4, processing: 3,
+    vitaminA: 75, vitaminC: 3.2, vitaminE: 0.62, vitaminB1: 0.35, vitaminB2: 0.25, vitaminB6: 0.15, folate: 60,
+    calcium: 87, iron: 2.9, magnesium: 36, phosphorus: 148, potassium: 232, sodium: 552, zinc: 1.4
+},
+'烤牛排': {
+    calories: 277, protein: 26.1, carbs: 0, fat: 18.5, fiber: 0, processing: 2,
+    vitaminA: 1, vitaminC: 0, vitaminE: 0.52, vitaminB1: 0.08, vitaminB2: 0.2, vitaminB6: 0.37, folate: 9,
+    calcium: 9, iron: 2.9, magnesium: 23, phosphorus: 214, potassium: 340, sodium: 60, zinc: 5.8
+},
+'烤鸡': {
+    calories: 190, protein: 28.9, carbs: 0, fat: 7.4, fiber: 0, processing: 2,
+    vitaminA: 22, vitaminC: 0, vitaminE: 0.29, vitaminB1: 0.08, vitaminB2: 0.18, vitaminB6: 0.61, folate: 6,
+    calcium: 14, iron: 1.1, magnesium: 28, phosphorus: 214, potassium: 263, sodium: 77, zinc: 1.8
+},
+'通心粉奶酪': {
+    calories: 164, protein: 6.7, carbs: 18.8, fat: 7.9, fiber: 0.9, processing: 4,
+    vitaminA: 104, vitaminC: 0, vitaminE: 0.22, vitaminB1: 0.17, vitaminB2: 0.21, vitaminB6: 0.08, folate: 15,
+    calcium: 134, iron: 0.7, magnesium: 18, phosphorus: 162, potassium: 121, sodium: 510, zinc: 0.9
+},
+'法式蔬菜汤': {
+    calories: 56, protein: 1.5, carbs: 10.1, fat: 1.2, fiber: 1.6, processing: 2,
+    vitaminA: 532, vitaminC: 11.8, vitaminE: 0.37, vitaminB1: 0.05, vitaminB2: 0.04, vitaminB6: 0.12, folate: 19,
+    calcium: 30, iron: 0.6, magnesium: 12, phosphorus: 38, potassium: 173, sodium: 285, zinc: 0.3
+},
+
+// === 新增粥、糕点类 ===
+'皮蛋瘦肉粥': {
+    calories: 85, protein: 5.1, carbs: 12.3, fat: 1.8, fiber: 0.3, processing: 2,
+    vitaminA: 48, vitaminC: 0.2, vitaminE: 0.42, vitaminB1: 0.07, vitaminB2: 0.15, vitaminB6: 0.08, folate: 12,
+    calcium: 38, iron: 1.1, magnesium: 14, phosphorus: 72, potassium: 85, sodium: 365, zinc: 0.8
+},
+'白粥': {
+    calories: 49, protein: 1, carbs: 11, fat: 0.1, fiber: 0.2, processing: 2,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.01, vitaminB1: 0.01, vitaminB2: 0.01, vitaminB6: 0.02, folate: 2,
+    calcium: 3, iron: 0.1, magnesium: 3, phosphorus: 12, potassium: 15, sodium: 1, zinc: 0.3
+},
+'绿豆粥': {
+    calories: 72, protein: 3.2, carbs: 14.6, fat: 0.2, fiber: 1.8, processing: 2,
+    vitaminA: 1, vitaminC: 0.2, vitaminE: 0.1, vitaminB1: 0.1, vitaminB2: 0.05, vitaminB6: 0.07, folate: 69,
+    calcium: 13, iron: 0.8, magnesium: 23, phosphorus: 45, potassium: 125, sodium: 2, zinc: 0.4
+},
+'八宝粥': {
+    calories: 116, protein: 2.7, carbs: 24.5, fat: 1.3, fiber: 1.2, processing: 3,
+    vitaminA: 1, vitaminC: 0.3, vitaminE: 0.15, vitaminB1: 0.05, vitaminB2: 0.04, vitaminB6: 0.06, folate: 11,
+    calcium: 18, iron: 0.9, magnesium: 12, phosphorus: 33, potassium: 82, sodium: 8, zinc: 0.5
+},
+'肉粽': {
+    calories: 196, protein: 5.4, carbs: 33.7, fat: 5.1, fiber: 1.5, processing: 3,
+    vitaminA: 15, vitaminC: 0, vitaminE: 0.2, vitaminB1: 0.08, vitaminB2: 0.04, vitaminB6: 0.11, folate: 24,
+    calcium: 12, iron: 1.3, magnesium: 18, phosphorus: 61, potassium: 106, sodium: 286, zinc: 0.9
+},
+'麻团': {
+    calories: 321, protein: 5.8, carbs: 44.6, fat: 13.9, fiber: 1.3, processing: 4,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.3, vitaminB1: 0.16, vitaminB2: 0.06, vitaminB6: 0.04, folate: 25,
+    calcium: 20, iron: 1.4, magnesium: 19, phosphorus: 58, potassium: 87, sodium: 178, zinc: 0.6
+},
+'春卷': {
+    calories: 198, protein: 5.3, carbs: 21.3, fat: 10.8, fiber: 1.7, processing: 4,
+    vitaminA: 142, vitaminC: 8.6, vitaminE: 0.9, vitaminB1: 0.1, vitaminB2: 0.08, vitaminB6: 0.13, folate: 32,
+    calcium: 20, iron: 1.2, magnesium: 16, phosphorus: 62, potassium: 152, sodium: 334, zinc: 0.5
+},
+'油条': {
+    calories: 389, protein: 8.6, carbs: 38.3, fat: 23.7, fiber: 1.4, processing: 4,
+    vitaminA: 0, vitaminC: 0, vitaminE: 0.15, vitaminB1: 0.25, vitaminB2: 0.09, vitaminB6: 0.03, folate: 69,
+    calcium: 43, iron: 2.1, magnesium: 23, phosphorus: 92, potassium: 104, sodium: 460, zinc: 0.8
+},
+'煎饼果子': {
+    calories: 240, protein: 6.8, carbs: 30.5, fat: 10.9, fiber: 1.9, processing: 3,
+    vitaminA: 48, vitaminC: 1.2, vitaminE: 0.74, vitaminB1: 0.19, vitaminB2: 0.13, vitaminB6: 0.06, folate: 45,
+    calcium: 35, iron: 2.4, magnesium: 22, phosphorus: 93, potassium: 137, sodium: 580, zinc: 0.7
+},
+'饺子': {
+    calories: 197, protein: 8.5, carbs: 33.1, fat: 4.1, fiber: 1.6, processing: 3,
+    vitaminA: 18, vitaminC: 2.7, vitaminE: 0.25, vitaminB1: 0.2, vitaminB2: 0.09, vitaminB6: 0.11, folate: 37,
+    calcium: 28, iron: 1.8, magnesium: 21, phosphorus: 89, potassium: 159, sodium: 341, zinc: 0.9
+},
+'炒饭': {
+    calories: 186, protein: 5.3, carbs: 29.1, fat: 5.7, fiber: 1.2, processing: 3,
+    vitaminA: 49, vitaminC: 4.3, vitaminE: 0.54, vitaminB1: 0.12, vitaminB2: 0.07, vitaminB6: 0.1, folate: 18,
+    calcium: 20, iron: 0.8, magnesium: 18, phosphorus: 71, potassium: 116, sodium: 321, zinc: 0.8
+},
+'炒面': {
+    calories: 237, protein: 8.8, carbs: 38.4, fat: 6.3, fiber: 2.3, processing: 3,
+    vitaminA: 62, vitaminC: 13.1, vitaminE: 0.7, vitaminB1: 0.18, vitaminB2: 0.1, vitaminB6: 0.13, folate: 32,
+    calcium: 30, iron: 1.7, magnesium: 29, phosphorus: 98, potassium: 172, sodium: 497, zinc: 1.1
+},
     // === 烹饪方式影响系数（必须放在最后） ===
     cooking_effects: {
         stir_fry: { vitaminC_retention: 0.8, vitaminB_retention: 0.9, mineral_retention: 0.95, fat_addition: 2.5 },
@@ -897,6 +1581,47 @@ let appState = {
     dailyScores: [],
     nutritionAccuracyStats: { correct: 0, total: 0, usda_matched: 0 }
 };
+
+// ========== 全局变量 ==========
+// 贪吃蛇相关全局变量
+let canFeedSnake = false; // 是否可以投喂小蛇
+let isFeedingSnake = false; // 是否正在投喂小蛇
+let hasFedSnakeToday = false; // 今天是否已经投喂过小蛇
+let lastFeedDate = ''; // 最后投喂日期
+
+// 更新投喂按钮状态
+function updateFeedButtonState() {
+  const feedButton = document.getElementById('btnFeedSnake');
+  if (!feedButton) return;
+  
+  // 获取最后一餐的日期
+  if (appState.meals.length === 0) {
+    canFeedSnake = false;
+  } else {
+    const lastMealDate = appState.meals[appState.meals.length - 1].date;
+    const mealsToday = appState.meals.filter(m => m.date === lastMealDate);
+    const planFat = appState.plan.targetFat || 0;
+    const realFat = appState.dailyNutrition.fat || 0;
+    
+    console.log("检查投喂条件:", mealsToday.length, "餐, 计划脂肪:", planFat, "实际脂肪:", realFat);
+    
+    // 条件检查: 同一天三餐都录入了 + 今天脂肪摄入未达标 + 今天没投喂过
+    canFeedSnake = mealsToday.length >= 3 && realFat < planFat && 
+                  (!hasFedSnakeToday || lastFeedDate !== lastMealDate);
+  }
+  
+  console.log("投喂按钮状态:", canFeedSnake, !isFeedingSnake);
+  
+  if (canFeedSnake && !isFeedingSnake) {
+    feedButton.style.backgroundColor = '#41b348';
+    feedButton.style.cursor = 'pointer';
+    feedButton.disabled = false;
+  } else {
+    feedButton.style.backgroundColor = '#e25555';
+    feedButton.style.cursor = 'not-allowed';
+    feedButton.disabled = true;
+  }
+}
 
 // ========== 页面切换 ==========
 function switchToMainPage() {
@@ -1262,6 +1987,8 @@ function parseFoodInput(foodInput) {
 </script>
 <script>
 // ========== 餐食录入提交 ==========
+// ========== 全局变量 ==========
+// ========== 餐食录入提交 ==========
 function submitMeal() {
     const inputRaw = document.getElementById('mealInputRaw').value.trim();
     if (!inputRaw) {
@@ -1316,6 +2043,247 @@ appState.currentMeal = nextMealNumber;
 document.getElementById('mealNumber').textContent = nextMealNumber;
     document.getElementById('mealInputRaw').value = '';
 }
+// 创建脂肪小球
+function createFatBalls() {
+  console.log("创建脂肪球函数被调用");
+  
+  const planFat = appState.plan.targetFat || 0;
+  const realFat = appState.dailyNutrition.fat || 0;
+  
+  console.log("计划脂肪:", planFat, "实际脂肪:", realFat);
+  
+  if (realFat >= planFat) {
+    console.log("没有脂肪差值，不创建小球");
+    return 0; // 没有差值，不创建小球
+  }
+  
+  // 函数其余部分保持不变...  
+  const fatDiff = planFat - realFat; // 差值，即省下的脂肪
+  const fatBar = document.getElementById('progressFat');
+  const fatBarContainer = fatBar.parentElement;
+  const fatBarWidth = fatBarContainer.offsetWidth;
+  const fatBarPercent = Math.min(100, Math.round((realFat / planFat) * 100));
+  const ballsStartPosPercent = fatBarPercent; // 小球开始的位置百分比
+  
+  // 计算可以创建多少个小球
+  const ballSize = 18; // 小球直径
+  const ballSpacing = 10; // 小球间距
+  const ballArea = fatBarWidth * (100 - ballsStartPosPercent) / 100; // 可用区域宽度
+  const maxBalls = Math.floor(ballArea / (ballSize + ballSpacing)); // 最大可放置球数
+  
+  // 确定要显示的球的数量，最少2个，最多maxBalls个
+  const ballCount = Math.max(2, Math.min(maxBalls, Math.ceil(fatDiff)));
+  
+  // 创建小球
+  const ballsContainer = document.getElementById('fatBallsContainer');
+  ballsContainer.innerHTML = ''; // 清空容器
+  ballsContainer.style.left = `${ballsStartPosPercent}%`;
+  ballsContainer.style.width = `${100 - ballsStartPosPercent}%`;
+  ballsContainer.style.display = 'flex';
+  ballsContainer.style.alignItems = 'center';
+  ballsContainer.style.justifyContent = 'space-around';
+  
+  for (let i = 0; i < ballCount; i++) {
+    const ball = document.createElement('div');
+    ball.className = 'fat-ball';
+    ball.style.width = `${ballSize}px`;
+    ball.style.height = `${ballSize}px`;
+    ball.style.borderRadius = '50%';
+    ball.style.backgroundColor = '#ff7aa0';
+    ball.style.boxShadow = '0 0 5px #ff4d7e';
+    ball.style.position = 'relative';
+    ball.dataset.index = i;
+    ballsContainer.appendChild(ball);
+  }
+  
+  return ballCount;
+}
+
+// 小蛇投喂动画
+function startSnakeFeeding() {
+  console.log("开始尝试投喂蛇...");
+  
+  // 先确认投喂按钮状态是否正确
+  updateFeedButtonState();
+  
+  // 如果不满足投喂条件，直接弹窗提示
+  if (isFeedingSnake) {
+    alert('正在投喂中，请稍后...');
+    return;
+  }
+  
+  if (!canFeedSnake) {
+    alert('今天无法投喂小蛇！请完成三餐录入且确保脂肪摄入未达标。');
+    return;
+  }
+  
+  // 创建脂肪小球
+  console.log("创建脂肪小球...");
+  const ballCount = createFatBalls();
+  console.log("创建的小球数量:", ballCount);
+  
+  if (ballCount === 0) {
+    alert('今天没有可以投喂的脂肪！');
+    return;
+  }
+  
+  // 其余代码保持不变...
+  
+  // 函数其余部分保持不变...  
+  isFeedingSnake = true;
+  snakeEating = true; // 告诉小蛇动画系统进入吃食模式
+  
+  // 保存最后投喂日期
+  if (appState.meals.length > 0) {
+    lastFeedDate = appState.meals[appState.meals.length - 1].date;
+    hasFedSnakeToday = true;
+  }
+  
+  // 设置投喂按钮状态
+  updateFeedButtonState();
+  
+  // 获取小蛇的位置和小球位置
+  const snakeCanvas = document.getElementById('snakePet');
+  const snakeHead = snakeBody[0];
+  const balls = document.querySelectorAll('.fat-ball');
+  const lastBall = balls[balls.length - 1];
+  
+  // 小球在页面中的位置
+  const lastBallRect = lastBall.getBoundingClientRect();
+  const canvasRect = snakeCanvas.getBoundingClientRect();
+  
+  // 计算目标位置（转换为canvas坐标系）
+  const targetX = lastBallRect.left + lastBallRect.width/2 - canvasRect.left - SNAKE_SIZE/2;
+  const targetY = lastBallRect.top + lastBallRect.height/2 - canvasRect.top - SNAKE_SIZE/2;
+  
+  // 存储动画起始位置
+  const startX = snakeHead.x;
+  const startY = snakeHead.y;
+  
+  // 小蛇移动到球位置的动画
+  let moveFrame = 0, totalMoveFrames = 40;
+  
+  function moveSnakeToBall() {
+    moveFrame++;
+    const progress = moveFrame / totalMoveFrames;
+    const currentX = startX + (targetX - startX) * progress;
+    const currentY = startY + (targetY - startY) * progress;
+    
+    // 更新蛇头位置
+    snakeBody.unshift({ x: currentX, y: currentY });
+    snakeBody.length = snakeLength;
+    snakeMood = 'yum'; // 变为吃食表情
+    
+    // 如果到达目标位置，开始吃球
+    if (moveFrame >= totalMoveFrames) {
+      eatFatBalls();
+    } else {
+      requestAnimationFrame(moveSnakeToBall);
+    }
+  }
+  
+  // 吃球动画
+  function eatFatBalls() {
+    let currentBallIndex = balls.length - 1; // 从最后一个球开始吃
+    
+    function eatNextBall() {
+      if (currentBallIndex < 0) {
+        // 所有球都吃完了，跳舞庆祝
+        celebrateAfterEating();
+        return;
+      }
+      
+      // 吃当前球
+      const currentBall = balls[currentBallIndex];
+      currentBall.style.transform = 'scale(0)';
+      currentBall.style.transition = 'transform 0.5s';
+      
+      // 增加蛇身长度
+      snakeLength++;
+      localStorage.setItem('snakeLength', snakeLength);
+      
+      // 添加新的蛇身体节
+      const lastBodyPart = snakeBody[snakeBody.length - 1];
+      snakeBody.push({ ...lastBodyPart });
+      
+      // 稍等片刻吃下一个球
+      setTimeout(() => {
+        currentBallIndex--;
+        eatNextBall();
+      }, 600);
+    }
+    
+    // 开始吃球
+    eatNextBall();
+  }
+  
+  // 吃完后庆祝
+  function celebrateAfterEating() {
+    // 隐藏小球容器
+    document.getElementById('fatBallsContainer').style.display = 'none';
+    
+    // 显示爱心并跳舞
+    snakeMood = 'smile';
+    
+    // 创建爱心动画
+    const heart = document.createElement('div');
+    heart.innerHTML = '❤️';
+    heart.style.position = 'absolute';
+    heart.style.left = `${canvasRect.left + snakeBody[0].x + SNAKE_SIZE/2}px`;
+    heart.style.top = `${canvasRect.top + snakeBody[0].y - 20}px`;
+    heart.style.fontSize = '24px';
+    heart.style.animation = 'float-up 2s ease-out';
+    heart.style.zIndex = '1003';
+    document.body.appendChild(heart);
+    
+    // 添加动画样式
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes float-up {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    // 跳舞动画
+    let danceFrame = 0;
+    const danceTotal = 30;
+    const danceAmplitude = 10;
+    
+    function snakeDance() {
+      danceFrame++;
+      const offset = Math.sin(danceFrame * 0.5) * danceAmplitude;
+      
+      // 蛇头左右摆动
+      const head = snakeBody[0];
+      snakeBody[0] = { x: head.x + offset, y: head.y };
+      
+      if (danceFrame < danceTotal) {
+        requestAnimationFrame(snakeDance);
+      } else {
+        // 结束动画，恢复小蛇正常状态
+        setTimeout(() => {
+          snakeMood = 'normal';
+          snakeEating = false;
+          isFeedingSnake = false;
+          
+          // 清理爱心元素
+          setTimeout(() => {
+            document.body.removeChild(heart);
+          }, 1000);
+        }, 1000);
+      }
+    }
+    
+    // 开始跳舞
+    snakeDance();
+  }
+  
+  // 开始投喂动画
+  moveSnakeToBall();
+}
+
 // ========== 随机饮食数据生成功能 ==========
 
 // 【配置】可根据你数据库增删烹饪方式与单位
@@ -1432,8 +2400,8 @@ function updateProgressBars() {
     const plan = appState.plan;
     const curr = appState.dailyNutrition;
     function updateBar(id, value, max) {
-const bar = document.getElementById(id);
-if (!bar) return;
+        const bar = document.getElementById(id);
+        if (!bar) return;
         const percent = Math.min(100, Math.round((value / max) * 100));
         bar.style.width = percent + '%';
         if (percent > 100) {
@@ -1448,11 +2416,12 @@ if (!bar) return;
     updateBar('progressFat', curr.fat, plan.targetFat);
     updateBar('progressFiber', curr.fiber, plan.targetFiber);
 
-    document.getElementById('progressCaloriesValue').textContent = `${curr.calories} / ${plan.targetCalories} kcal`;
-    document.getElementById('progressProteinValue').textContent = `${curr.protein} / ${plan.targetProtein} g`;
-    document.getElementById('progressCarbsValue').textContent = `${curr.carbs} / ${plan.targetCarbs} g`;
-    document.getElementById('progressFatValue').textContent = `${curr.fat} / ${plan.targetFat} g`;
-    document.getElementById('progressFiberValue').textContent = `${curr.fiber} / ${plan.targetFiber} g`;
+    // 修改这部分，确保所有数值显示只保留两位小数
+    document.getElementById('progressCaloriesValue').textContent = `${curr.calories.toFixed(0)} / ${plan.targetCalories} kcal`;
+    document.getElementById('progressProteinValue').textContent = `${curr.protein.toFixed(1)} / ${plan.targetProtein} g`;
+    document.getElementById('progressCarbsValue').textContent = `${curr.carbs.toFixed(1)} / ${plan.targetCarbs} g`;
+    document.getElementById('progressFatValue').textContent = `${curr.fat.toFixed(1)} / ${plan.targetFat} g`;
+    document.getElementById('progressFiberValue').textContent = `${curr.fiber.toFixed(1)} / ${plan.targetFiber} g`;
 }
 
 // ========== 数据页进度条、健康分显示 ==========
@@ -1461,8 +2430,8 @@ function updateDataProgressBars() {
     const plan = appState.plan;
     const curr = appState.dailyNutrition;
     function updateBar(id, value, max) {
-const bar = document.getElementById(id);
-if (!bar) return;
+        const bar = document.getElementById(id);
+        if (!bar) return;
         const percent = Math.min(100, Math.round((value / max) * 100));
         bar.style.width = percent + '%';
         if (percent > 100) {
@@ -1477,14 +2446,13 @@ if (!bar) return;
     updateBar('data-progressFat', curr.fat, plan.targetFat);
     updateBar('data-progressFiber', curr.fiber, plan.targetFiber);
 
-    document.getElementById('data-progressCaloriesValue').textContent = `${curr.calories} / ${plan.targetCalories} kcal`;
-    document.getElementById('data-progressProteinValue').textContent = `${curr.protein} / ${plan.targetProtein} g`;
-    document.getElementById('data-progressCarbsValue').textContent = `${curr.carbs} / ${plan.targetCarbs} g`;
-    document.getElementById('data-progressFatValue').textContent = `${curr.fat} / ${plan.targetFat} g`;
-    document.getElementById('data-progressFiberValue').textContent = `${curr.fiber} / ${plan.targetFiber} g`;
+    // 修改这部分，确保所有数值显示只保留两位小数
+    document.getElementById('data-progressCaloriesValue').textContent = `${curr.calories.toFixed(0)} / ${plan.targetCalories} kcal`;
+    document.getElementById('data-progressProteinValue').textContent = `${curr.protein.toFixed(1)} / ${plan.targetProtein} g`;
+    document.getElementById('data-progressCarbsValue').textContent = `${curr.carbs.toFixed(1)} / ${plan.targetCarbs} g`;
+    document.getElementById('data-progressFatValue').textContent = `${curr.fat.toFixed(1)} / ${plan.targetFat} g`;
+    document.getElementById('data-progressFiberValue').textContent = `${curr.fiber.toFixed(1)} / ${plan.targetFiber} g`;
 }
-
-
 // ========== 健康评分计算 ==========
 function calculateNutritionDensity(nutrition) {
     if (nutrition.calories <= 0) return 0;
@@ -1507,11 +2475,28 @@ function calculateNutritionDensity(nutrition) {
     return Math.round(totalDensityScore * 10) / 10;
 }
 
+// 修改 updateDailyHealthScore 函数
 function updateDailyHealthScore() {
     const current = appState.dailyNutrition;
     const target = appState.plan;
-    const todayMeals = appState.meals;
-    if (!todayMeals.length) return;
+    // 检查是否为同一天的第三餐
+    let todayMeals = [];
+    if (appState.meals.length > 0) {
+        const lastMealDate = appState.meals[appState.meals.length - 1].date;
+        todayMeals = appState.meals.filter(m => m.date === lastMealDate);
+    }
+    
+    // 更新健康分区域的显示状态
+    document.getElementById('dailyHealthScore').style.display = 'block';
+    
+    // 如果今天的餐数少于3，显示"健康分计算中"并返回
+    if (todayMeals.length < 3) {
+        document.getElementById('healthScoreValue').textContent = "计算中";
+        document.getElementById('healthScoreBreakdown').innerHTML = "完成当日三餐记录后显示详细评分";
+        return;
+    }
+    
+    // 以下是原有的健康分计算逻辑
     let totalScore = 0;
     // 1. 基础营养摄入达成率 (25%)
     let nutritionScore = 0;
@@ -1563,13 +2548,13 @@ function updateDailyHealthScore() {
 
     // 最终得分限制
     totalScore = Math.min(100, Math.round(totalScore));
+    
+    // 保存每日健康分，用于数据页面的检索展示
+    const lastMealDate = todayMeals[0].date;
+    if (!appState.dailyScores) appState.dailyScores = {};
+    appState.dailyScores[lastMealDate] = totalScore;
+    
     // 更新UI
-// 仅在录入3餐及以上时才显示健康分
-if (appState.meals.length >= 3) {
-  document.getElementById('dailyHealthScore').style.display = 'block';
-} else {
-  document.getElementById('dailyHealthScore').style.display = 'none';
-}
     document.getElementById('healthScoreValue').textContent = totalScore;
     document.getElementById('healthScoreBreakdown').innerHTML =
         `基础达成率: ${nutritionScore}/25 | 营养密度: ${densityScore.toFixed(1)}/25 | 加工: ${processingScore}/15 | 进餐节律: ${rhythmScore.toFixed(1)}/15 | USDA匹配: ${(usdaMatchRate*100).toFixed(1)}%`;
@@ -1642,6 +2627,7 @@ function showOverviewTab() {
 }
 
 // 显示“检索”
+// 修改 showSearchTab 函数中的检索结果处理部分
 function showSearchTab() {
   setTabSelected('search');
   currentDataTab = 'search';
@@ -1668,21 +2654,54 @@ function showSearchTab() {
       document.getElementById('searchResult').innerHTML = `<div style="color:#888;">该日没有饮食记录。</div>`;
       return;
     }
-    // 汇总当天健康分
-    let dayScore = '-';
+    
+    // 获取当天真实的健康分
+    let dayScore = '未计算';
     if (meals.length >= 3) {
-      // 参考你的每日健康分算法
-      let nutrition = {calories:0,protein:0,carbs:0,fat:0,fiber:0};
-      meals.forEach(m => {
-        nutrition.calories += m.nutrition.calories;
-        nutrition.protein += m.nutrition.protein;
-        nutrition.carbs += m.nutrition.carbs;
-        nutrition.fat += m.nutrition.fat;
-        nutrition.fiber += m.nutrition.fiber;
-      });
-      // 可简化：只演示分数功能（你可用已有算法精细化）
-      dayScore = '≥60';
+      // 从保存的健康分数据中获取
+      if (appState.dailyScores && appState.dailyScores[date]) {
+        dayScore = appState.dailyScores[date];
+      } else {
+        // 如果没有保存的健康分，重新计算
+        let dailyNutrition = {calories:0, protein:0, carbs:0, fat:0, fiber:0};
+        meals.forEach(m => {
+          dailyNutrition.calories += m.nutrition.calories;
+          dailyNutrition.protein += m.nutrition.protein;
+          dailyNutrition.carbs += m.nutrition.carbs;
+          dailyNutrition.fat += m.nutrition.fat;
+          dailyNutrition.fiber += m.nutrition.fiber;
+        });
+        
+        // 简化版的健康分计算
+        const plan = appState.plan;
+        let score = 0;
+        
+        // 计算基础营养达成率
+        const nutrients = [
+          { current: dailyNutrition.calories, target: plan.targetCalories },
+          { current: dailyNutrition.protein, target: plan.targetProtein },
+          { current: dailyNutrition.carbs, target: plan.targetCarbs },
+          { current: dailyNutrition.fat, target: plan.targetFat },
+          { current: dailyNutrition.fiber, target: plan.targetFiber }
+        ];
+        let nutritionScore = 0;
+        nutrients.forEach(nutrient => {
+          const ratio = nutrient.current / nutrient.target;
+          if (ratio >= 0.85 && ratio <= 1.15) nutritionScore += 5;
+          else if (ratio >= 0.7 && ratio <= 1.3) nutritionScore += 4;
+          else if (ratio >= 0.5 && ratio <= 1.5) nutritionScore += 2;
+          else nutritionScore += 1;
+        });
+        score += nutritionScore;
+        
+        // 简化计算，加上默认分数
+        score += 40; // 默认加40分作为其他项的简化计算
+        
+        // 最终得分限制
+        dayScore = Math.min(100, Math.round(score));
+      }
     }
+    
     document.getElementById('searchResult').innerHTML = `
       <div style="margin-bottom:9px;font-weight:700;">${date} 饮食与健康分</div>
       ${meals.map((meal,idx)=>`
@@ -1692,7 +2711,7 @@ function showSearchTab() {
           <div>热量：${meal.nutrition.calories}kcal，蛋白质：${meal.nutrition.protein}g，碳水：${meal.nutrition.carbs}g，脂肪：${meal.nutrition.fat}g，纤维：${meal.nutrition.fiber}g</div>
         </div>
       `).join('')}
-      <div style="font-weight:700;color:#397d1c;margin-top:12px;">当日健康分：${dayScore}</div>
+      <div style="font-weight:700;color:#397d1c;margin-top:12px;">当日健康分：${meals.length >= 3 ? dayScore : '未满三餐，无法计算'}</div>
     `;
   };
 }
@@ -1868,16 +2887,34 @@ ctx.restore();
 // 绑定事件
 document.addEventListener('DOMContentLoaded', function() {
 document.getElementById('btnGenPlan').onclick = submitPersonalInfo;
+
+// 添加投喂按钮事件监听
+const feedButton = document.getElementById('btnFeedSnake');
+if (feedButton) {
+  console.log("找到投喂按钮，添加点击事件");
+  
+  // 使用addEventListener确保不会覆盖其他事件监听器
+  feedButton.addEventListener('click', function() {
+    console.log("投喂按钮被点击", canFeedSnake, isFeedingSnake);
+    if (canFeedSnake && !isFeedingSnake) {
+      startSnakeFeeding();
+    }
+  });
+}
+
+  // 初始化投喂按钮状态
+  updateFeedButtonState();
   // 随机生成一餐按钮事件绑定
-  const btnRand = document.getElementById("btnRandomMeal");
-  if (btnRand) {
-    btnRand.onclick = function () {
-      const input = document.getElementById("mealInputRaw");
-      if (!input) return;
-      const value = generateRandomMealInput();
-      input.value = value;
-    };
-  }
+const btnRand = document.getElementById("btnRandomMeal");
+if (btnRand) {
+  btnRand.addEventListener('click', function() {
+    const input = document.getElementById("mealInputRaw");
+    if (!input) return;
+    const value = generateRandomMealInput();
+    input.value = value;
+  });
+}
+
   document.getElementById('btnOverview').onclick = showOverviewTab;
   document.getElementById('btnSearch').onclick = showSearchTab;
   document.getElementById('btnScore').onclick = showScoreTab;
@@ -1885,6 +2922,27 @@ document.getElementById('btnGenPlan').onclick = submitPersonalInfo;
   // 默认进入“总览”tab
   if(document.getElementById('btnOverview')) showOverviewTab();
 });
+
+// 确保submitMeal正确执行并更新按钮状态
+const originalSubmitMeal = submitMeal;
+submitMeal = function() {
+  try {
+    originalSubmitMeal.apply(this, arguments);
+    console.log("餐食提交成功，更新按钮状态");
+    // 更新投喂按钮状态
+    updateFeedButtonState();
+  } catch (error) {
+    console.error("提交餐食时出错:", error);
+  }
+};
+
+  // 修改updateDailyHealthScore，每次健康分更新时也更新投喂按钮状态
+  const originalUpdateDailyHealthScore = updateDailyHealthScore;
+  updateDailyHealthScore = function() {
+    originalUpdateDailyHealthScore.apply(this, arguments);
+    // 更新投喂按钮状态
+    updateFeedButtonState();
+  };
 </script>
 <script>
 // ==== Minecraft像素风电子宠物小蛇V2 ====
@@ -1915,43 +2973,50 @@ function initSnakeBody(len) {
 
 // 画蛇
 function drawSnake(ctx) {
-    ctx.clearRect(0, 0, SNAKE_CANVAS_W, SNAKE_CANVAS_H);
-    // 身体
-    for (let i = snakeBody.length - 1; i >= 1; i--) {
-        ctx.fillStyle = '#6bbd4a';
-        ctx.fillRect(snakeBody[i].x, snakeBody[i].y, SNAKE_SIZE, SNAKE_SIZE);
-        ctx.strokeStyle = '#397d1c';
-        ctx.strokeRect(snakeBody[i].x, snakeBody[i].y, SNAKE_SIZE, SNAKE_SIZE);
-    }
-    // 头
-    const head = snakeBody[0];
-    ctx.fillStyle = '#8ae068';
-    ctx.fillRect(head.x, head.y, SNAKE_SIZE, SNAKE_SIZE);
+  ctx.clearRect(0, 0, SNAKE_CANVAS_W, SNAKE_CANVAS_H);
+  // 身体
+  for (let i = snakeBody.length - 1; i >= 1; i--) {
+    ctx.fillStyle = '#6bbd4a';
+    ctx.fillRect(snakeBody[i].x, snakeBody[i].y, SNAKE_SIZE, SNAKE_SIZE);
     ctx.strokeStyle = '#397d1c';
-    ctx.strokeRect(head.x, head.y, SNAKE_SIZE, SNAKE_SIZE);
-    // 表情
-    let fx = head.x + 5, fy = head.y + 7;
-    ctx.save();
-    ctx.fillStyle = '#222';
-    if (snakeMood === 'smile') {
-        ctx.fillRect(fx, fy, 3, 3);
-        ctx.fillRect(fx + 9, fy, 3, 3);
-        ctx.beginPath();
-        ctx.arc(head.x + SNAKE_SIZE/2, head.y + 16, 5, 0, Math.PI, false);
-        ctx.stroke();
-    } else if (snakeMood === 'yum') {
-        ctx.fillRect(fx, fy, 3, 3);
-        ctx.fillRect(fx + 9, fy, 3, 3);
-        ctx.beginPath();
-        ctx.moveTo(head.x + 8, head.y + 18);
-        ctx.lineTo(head.x + 14, head.y + 22);
-        ctx.stroke();
-    } else { // normal
-        ctx.fillRect(fx + 1, fy, 2, 2);
-        ctx.fillRect(fx + 11, fy, 2, 2);
-        ctx.fillRect(head.x + SNAKE_SIZE/2 - 1, head.y + 14, 3, 3);
+    ctx.strokeRect(snakeBody[i].x, snakeBody[i].y, SNAKE_SIZE, SNAKE_SIZE);
+  }
+  // 头
+  const head = snakeBody[0];
+  ctx.fillStyle = '#8ae068';
+  ctx.fillRect(head.x, head.y, SNAKE_SIZE, SNAKE_SIZE);
+  ctx.strokeStyle = '#397d1c';
+  ctx.strokeRect(head.x, head.y, SNAKE_SIZE, SNAKE_SIZE);
+  // 表情
+  let fx = head.x + 5, fy = head.y + 7;
+  ctx.save();
+  ctx.fillStyle = '#222';
+  if (snakeMood === 'smile') {
+    ctx.fillRect(fx, fy, 3, 3);
+    ctx.fillRect(fx + 9, fy, 3, 3);
+    ctx.beginPath();
+    ctx.arc(head.x + SNAKE_SIZE/2, head.y + 16, 5, 0, Math.PI, false);
+    ctx.stroke();
+    
+    // 增加: 如果在投喂后庆祝，可以在头顶显示爱心
+    if (isFeedingSnake) {
+      ctx.fillStyle = '#ff7aa0';
+      ctx.font = '16px Arial';
+      ctx.fillText('❤️', head.x + SNAKE_SIZE/2 - 8, head.y - 5);
     }
-    ctx.restore();
+  } else if (snakeMood === 'yum') {
+    ctx.fillRect(fx, fy, 3, 3);
+    ctx.fillRect(fx + 9, fy, 3, 3);
+    ctx.beginPath();
+    ctx.moveTo(head.x + 8, head.y + 18);
+    ctx.lineTo(head.x + 14, head.y + 22);
+    ctx.stroke();
+  } else { // normal
+    ctx.fillRect(fx + 1, fy, 2, 2);
+    ctx.fillRect(fx + 11, fy, 2, 2);
+    ctx.fillRect(head.x + SNAKE_SIZE/2 - 1, head.y + 14, 3, 3);
+  }
+  ctx.restore();
 }
 
 // 让蛇自由爬行
@@ -2002,69 +3067,9 @@ function getFatBarCenter() {
 
 // 小蛇吃脂肪动画和生长
 function snakeEatFatIfNeeded() {
-    if (snakeEating) return;
-    const planFat = appState.plan.targetFat || 0;
-    const realFat = appState.dailyNutrition.fat || 0;
-    // 必须三餐录完且实际脂肪低于计划
-    if (appState.meals && appState.meals.length >= 3) {
-        const lastDate = appState.meals[appState.meals.length - 1].date;
-        const mealsToday = appState.meals.filter(m => m.date === lastDate);
-        if (mealsToday.length === 3 && realFat < planFat) {
-            // 检查脂肪条是否在屏幕
-            const fatBar = document.getElementById('progressFat');
-            if (!fatBar) return;
-            const rect = fatBar.getBoundingClientRect();
-            if (rect.top < window.innerHeight && rect.bottom > 0) {
-                // 蛇canvas和脂肪条都在
-                const snakeCanvas = document.getElementById('snakePet');
-                const canvasRect = snakeCanvas.getBoundingClientRect();
-                // 计算蛇头目标canvas内坐标
-                const fatBarCenter = getFatBarCenter();
-                if (!fatBarCenter) return;
-                // 把页面坐标转为canvas坐标（考虑滚动）
-                let targetX = fatBarCenter.x - canvasRect.left - SNAKE_SIZE / 2;
-                let targetY = fatBarCenter.y - canvasRect.top - SNAKE_SIZE / 2;
-                // 限制在canvas范围内
-                targetX = Math.max(SNAKE_MARGIN, Math.min(targetX, SNAKE_CANVAS_W - SNAKE_SIZE - SNAKE_MARGIN));
-                targetY = Math.max(SNAKE_MARGIN, Math.min(targetY, SNAKE_CANVAS_H - SNAKE_SIZE - SNAKE_MARGIN));
-                // 动画开始
-                snakeEating = true;
-                let eatFrame = 0, eatTotal = 40;
-                let start = { x: snakeBody[0].x, y: snakeBody[0].y };
-                function moveToFatBar() {
-                    eatFrame++;
-                    let t = eatFrame / eatTotal;
-                    let x = start.x + (targetX - start.x) * t;
-                    let y = start.y + (targetY - start.y) * t;
-                    snakeBody.unshift({ x, y });
-                    snakeBody.length = snakeLength;
-                    snakeMood = 'yum';
-                    drawSnake(snakeCanvas.getContext('2d'));
-                    if (eatFrame < eatTotal) {
-                        requestAnimationFrame(moveToFatBar);
-                    } else {
-                        // 吃掉后身体变长
-                        setTimeout(() => {
-                            snakeLength += Math.max(1, Math.floor((planFat - realFat) / SNAKE_GROW_FACTOR));
-                            localStorage.setItem('snakeLength', snakeLength);
-                            // 新节补充到蛇体
-                            for (let i = 0; i < Math.max(1, Math.floor((planFat - realFat) / SNAKE_GROW_FACTOR)); i++) {
-                                snakeBody.push({ ...snakeBody[snakeBody.length - 1] });
-                            }
-                            snakeMood = 'smile';
-                            setTimeout(() => {
-                                snakeMood = 'normal';
-                                snakeEating = false;
-                                // 继续自由活动
-                                snakeTarget = null;
-                            }, 1800);
-                        }, 800);
-                    }
-                }
-                moveToFatBar();
-            }
-        }
-    }
+  // 这个函数现在不再自动触发吃食
+  // 仅更新投喂按钮状态
+  updateFeedButtonState();
 }
 
 // 监听页面滚动和条形图渲染
