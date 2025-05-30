@@ -1526,11 +1526,11 @@ if (!bar) return;
     updateBar('progressFat', curr.fat, plan.targetFat);
     updateBar('progressFiber', curr.fiber, plan.targetFiber);
 
-    document.getElementById('progressCaloriesValue').textContent = `${curr.calories} / ${plan.targetCalories} kcal`;
-    document.getElementById('progressProteinValue').textContent = `${curr.protein} / ${plan.targetProtein} g`;
-    document.getElementById('progressCarbsValue').textContent = `${curr.carbs} / ${plan.targetCarbs} g`;
-    document.getElementById('progressFatValue').textContent = `${curr.fat} / ${plan.targetFat} g`;
-    document.getElementById('progressFiberValue').textContent = `${curr.fiber} / ${plan.targetFiber} g`;
+document.getElementById('progressCaloriesValue').textContent = `${curr.calories} / ${plan.targetCalories} kcal`;
+    document.getElementById('progressProteinValue').textContent = `${curr.protein.toFixed(2)} / ${plan.targetProtein} g`;
+    document.getElementById('progressCarbsValue').textContent = `${curr.carbs.toFixed(2)} / ${plan.targetCarbs} g`;
+    document.getElementById('progressFatValue').textContent = `${curr.fat.toFixed(2)} / ${plan.targetFat} g`;
+    document.getElementById('progressFiberValue').textContent = `${curr.fiber.toFixed(2)} / ${plan.targetFiber} g`;
 // 更新投喂按钮状态
     updateFeedButtonState();
 }
@@ -1656,16 +1656,22 @@ function updateDailyHealthScore() {
     // 最终得分限制
     totalScore = Math.min(100, Math.round(totalScore));
     // 更新UI
-// 仅在录入3餐及以上时才显示健康分
-if (appState.meals.length >= 3) {
+// 检查当日是否有三餐完整数据
+const currentDate = appState.meals.length > 0 ? appState.meals[appState.meals.length - 1].date : null;
+const todayMealsCount = currentDate ? appState.meals.filter(m => m.date === currentDate).length : 0;
+
+if (todayMealsCount >= 3) {
   document.getElementById('dailyHealthScore').style.display = 'block';
-} else {
-  document.getElementById('dailyHealthScore').style.display = 'none';
-}
-    document.getElementById('healthScoreValue').textContent = totalScore;
-    document.getElementById('healthScoreBreakdown').innerHTML =
+  document.getElementById('healthScoreValue').textContent = totalScore;
+  document.getElementById('healthScoreBreakdown').innerHTML =
         `基础达成率: ${nutritionScore}/25 | 营养密度: ${densityScore.toFixed(1)}/25 | 加工: ${processingScore}/15 | 进餐节律: ${rhythmScore.toFixed(1)}/15 | USDA匹配: ${(usdaMatchRate*100).toFixed(1)}%`;
+} else {
+  document.getElementById('dailyHealthScore').style.display = 'block';
+  document.getElementById('healthScoreValue').textContent = '计算中';
+  document.getElementById('healthScoreBreakdown').innerHTML = '健康分计算中...';
 }
+}
+
 
 // ========== 数据趋势等功能（简单折线图/模拟） ==========
 function updateDataPageCharts() {
@@ -1760,10 +1766,10 @@ function showSearchTab() {
       document.getElementById('searchResult').innerHTML = `<div style="color:#888;">该日没有饮食记录。</div>`;
       return;
     }
-    // 汇总当天健康分
+// 汇总当天健康分
     let dayScore = '-';
     if (meals.length >= 3) {
-      // 参考你的每日健康分算法
+      // 使用完整的健康分计算算法
       let nutrition = {calories:0,protein:0,carbs:0,fat:0,fiber:0};
       meals.forEach(m => {
         nutrition.calories += m.nutrition.calories;
@@ -1772,8 +1778,56 @@ function showSearchTab() {
         nutrition.fat += m.nutrition.fat;
         nutrition.fiber += m.nutrition.fiber;
       });
-      // 可简化：只演示分数功能（你可用已有算法精细化）
-      dayScore = '≥60';
+      
+      // 计算具体健康分
+      let totalScore = 0;
+      
+      // 1. 基础营养摄入达成率 (25%)
+      let nutritionScore = 0;
+      const nutrients = [
+        { current: nutrition.calories, target: appState.plan.targetCalories },
+        { current: nutrition.protein, target: appState.plan.targetProtein },
+        { current: nutrition.carbs, target: appState.plan.targetCarbs },
+        { current: nutrition.fat, target: appState.plan.targetFat },
+        { current: nutrition.fiber, target: appState.plan.targetFiber }
+      ];
+      nutrients.forEach(nutrient => {
+        const ratio = nutrient.current / nutrient.target;
+        let score = 0;
+        if (ratio >= 0.85 && ratio <= 1.15) score = 5;
+        else if (ratio >= 0.7 && ratio <= 1.3) score = 4;
+        else if (ratio >= 0.5 && ratio <= 1.5) score = 2;
+        else score = 1;
+        nutritionScore += score;
+      });
+      totalScore += nutritionScore;
+      
+      // 2. 营养密度评分 (25%)
+      let densityScore = 0;
+      meals.forEach(meal => {
+        densityScore += calculateNutritionDensity(meal.nutrition);
+      });
+      densityScore = Math.min(25, densityScore / meals.length * 0.25);
+      totalScore += densityScore;
+      
+      // 3. 食物加工程度评分 (15%)
+      const avgProcessing = meals.reduce((sum, meal) => sum + meal.nutrition.processing, 0) / meals.length;
+      const processingScore = Math.max(0, 15 - Math.round(avgProcessing * 3));
+      totalScore += processingScore;
+      
+      // 4. 进餐时间及窗口评分 (15%)
+      let rhythmScore = 0;
+      const avgDuration = meals.reduce((sum, meal) => sum + meal.duration, 0) / meals.length;
+      if (avgDuration >= 20 && avgDuration <= 40) rhythmScore += 7.5;
+      else if (avgDuration >= 15 && avgDuration <= 50) rhythmScore += 5;
+      else rhythmScore += 2;
+      rhythmScore += Math.min(7.5, meals.length * 2.5);
+      totalScore += rhythmScore;
+      
+      // 5. USDA数据匹配率评分 (20%)
+      totalScore += 15; // 简化处理
+      
+      dayScore = Math.min(100, Math.round(totalScore));
     }
     document.getElementById('searchResult').innerHTML = `
       <div style="margin-bottom:9px;font-weight:700;">${date} 饮食与健康分</div>
@@ -2198,7 +2252,7 @@ function startEatingBalls(balls) {
     
     const canvas = document.getElementById('snakePet');
     const canvasRect = canvas.getBoundingClientRect();
-    let ballIndex = balls.length - 1;
+    let ballIndex = balls.length - 1; // 从最右边的球开始
     
     function eatNextBall() {
         if (ballIndex < 0) {
@@ -2211,9 +2265,9 @@ function startEatingBalls(balls) {
         const ball = balls[ballIndex];
         const ballRect = ball.getBoundingClientRect();
         
-        // 计算目标位置
-        let targetX = ballRect.left - canvasRect.left + 7 - SNAKE_SIZE / 2;
-        let targetY = ballRect.top - canvasRect.top + 7 - SNAKE_SIZE / 2;
+        // 精确计算目标位置 - 球的中心对应蛇头中心
+        let targetX = ballRect.left - canvasRect.left + (ballRect.width / 2) - (SNAKE_SIZE / 2);
+        let targetY = ballRect.top - canvasRect.top + (ballRect.height / 2) - (SNAKE_SIZE / 2);
         
         // 限制在canvas范围内
         targetX = Math.max(SNAKE_MARGIN, Math.min(targetX, SNAKE_CANVAS_W - SNAKE_SIZE - SNAKE_MARGIN));
@@ -2221,8 +2275,7 @@ function startEatingBalls(balls) {
         
         // 快速移动到球的位置
         snakeMood = 'yum';
-        let moveFrame = 0;
-        const moveSpeed = 3; // 快速移动
+        const moveSpeed = 4; // 快速移动
         
         function moveTowardsBall() {
             const head = snakeBody[0];
@@ -2237,7 +2290,10 @@ function startEatingBalls(balls) {
                 snakeBody.length = snakeLength;
                 requestAnimationFrame(moveTowardsBall);
             } else {
-                // 到达球的位置，吃掉它
+                // 精确定位到目标位置
+                snakeBody[0] = { x: targetX, y: targetY };
+                
+                // 吃掉球
                 ball.style.opacity = '0';
                 setTimeout(() => {
                     ball.remove();
@@ -2247,8 +2303,8 @@ function startEatingBalls(balls) {
                     localStorage.setItem('snakeLength', snakeLength);
                     
                     ballIndex--;
-                    setTimeout(() => eatNextBall(), 200);
-                }, 100);
+                    setTimeout(() => eatNextBall(), 300);
+                }, 150);
             }
         }
         
@@ -2257,7 +2313,6 @@ function startEatingBalls(balls) {
     
     eatNextBall();
 }
-
 // 显示爱心动画
 function showHeart() {
     snakeMood = 'smile';
