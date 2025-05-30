@@ -1,0 +1,2358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能膳食营养追踪平台 V4.4</title>
+    <style>
+/* ===== Minecraft UI Cartoon Pixel Style ===== */
+body {
+    font-family: 'Segoe UI', '微软雅黑', 'Arial', sans-serif;
+    background: repeating-linear-gradient(135deg, #90c272 0 40px, #b5dca6 40px 80px, #7fc4c6 80px 120px, #bcdcff 120px 160px);
+    min-height: 100vh;
+    color: #343421;
+    padding: min(2vw, 32px);
+}
+
+/* 方块立体感大边框和阴影 */
+.interface, .data-page {
+    background: #e3e3e3;
+    border: 4px solid #639643;
+    border-radius: 0;
+    box-shadow: 8px 8px 0 #b39a69, 0 8px 32px 0 #8fc87733;
+    padding: min(5vw, 40px) min(5vw, 44px) min(4vw, 32px) min(5vw, 44px);
+    margin-bottom: 20px;
+    transition: box-shadow 0.18s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.main-page {
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+.app-header {
+    background: #a6d08c;
+    border: 4px solid #639643;
+    border-bottom: none;
+    box-shadow: 0 6px 0 #b39a69;
+    padding: 10px 24px 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #2e5714;
+    border-radius: 0;
+    font-family: 'Segoe UI', '微软雅黑', sans-serif;
+}
+
+.title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #397d1c;
+    text-shadow: 2px 2px 0 #b6e69b, 4px 4px 0 #fff4a3;
+    font-family: inherit;
+}
+
+/* 像素立体按钮 */
+.icon-btn {
+    width: 44px; height: 44px; 
+    border: 3px solid #397d1c;
+    background: #6ad64d;
+    color: #fff4a3;
+    font-size: 24px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-left: 6px; margin-right: 0;
+    box-shadow: 3px 3px 0 #b39a69, 0 0 0 #fff4a3;
+    border-radius: 0; /* 方块 */
+    transition: background 0.12s, color 0.15s, box-shadow 0.12s;
+}
+.icon-btn:hover {
+    background: #fff4a3;
+    color: #639643;
+    box-shadow: 1px 1px 0 #b39a69, 2px 2px 0 #fff4a3;
+}
+
+/* 菜单下拉也有方块风格 */
+.nav-content {
+    background: #d6ffd2;
+    border: 3px solid #639643;
+    box-shadow: 4px 4px 0 #b39a69;
+    border-radius: 0;
+    top: 44px;
+    min-width: 128px;
+}
+.nav-content a {
+    color: #397d1c;
+    font-size: 17px;
+    padding: 14px 18px;
+    border-bottom: 2px dashed #b39a69;
+    font-weight: 600;
+    text-decoration: none;
+    display: block;
+    font-family: inherit;
+    background: transparent;
+    letter-spacing: 1px;
+    transition: background 0.12s, color 0.12s;
+}
+.nav-content a:hover {
+    background: #fff4a3;
+    color: #397d1c;
+}
+
+/* 输入框也改成粗边像素风 */
+input, select, textarea {
+    background: #f5f5d7;
+    color: #2d3a0a;
+    border: 2.5px solid #397d1c;
+    border-radius: 0;
+    font-family: inherit;
+    font-size: 15px;
+    box-shadow: 2px 2px 0 #b39a69;
+    padding: 9px 10px;
+    margin-bottom: 4px;
+    outline: none;
+    transition: border 0.14s, box-shadow 0.16s;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+input:focus, select:focus, textarea:focus {
+    border-color: #6ad64d;
+    background: #fff4a3;
+    box-shadow: 0 0 0 3px #e1ffc7;
+}
+
+.btn {
+    background: #6ad64d;
+    color: #343421;
+    border: 3px solid #397d1c;
+    border-radius: 0;
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: 2px 2px 0 #b39a69;
+    transition: background 0.13s, color 0.14s, box-shadow 0.12s;
+    margin-top: 12px;
+    text-transform: none;
+    letter-spacing: 1px;
+    padding: 12px 0;
+}
+.btn:hover {
+    background: #fff4a3;
+    color: #639643;
+    box-shadow: 1px 1px 0 #b39a69;
+}
+
+.interface-title {
+    font-size: 1.18rem;
+    font-weight: 900;
+    color: #397d1c;
+    border-bottom: 2px dashed #a6d08c;
+    background: #d6ffd2;
+    letter-spacing: 2px;
+    margin-bottom: 22px;
+    padding: 10px 6px;
+    text-shadow: 1px 1px 0 #fff4a3;
+}
+
+.meal-counter {
+    background: #bfffa6;
+    border: 2px solid #6ad64d;
+    color: #397d1c;
+    font-size: 1.05rem;
+    font-weight: 700;
+    box-shadow: 2px 2px 0 #b39a69;
+    border-radius: 0;
+    margin-bottom: 16px;
+}
+
+/* 进度条样式，像素风色块 */
+.progress-title {
+    font-size: 15px;
+    color: #4e660f;
+    text-align: left;
+    margin-bottom: 12px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+.progress-section {
+    margin: 20px 0 8px 0;
+    padding: 10px 4px 10px 4px;
+    background: #c1eab8;
+    border: 2.5px solid #639643;
+    box-shadow: 4px 4px 0 #b39a69;
+    border-radius: 0;
+}
+.progress-item {
+    margin-bottom: 13px;
+}
+.progress-label {
+    display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 14px;
+    color: #639643; font-weight: 700; letter-spacing: 1px;
+}
+.progress-bar {
+    background: #7fc4c6;
+    border: 2px solid #397d1c;
+    border-radius: 0;
+    height: 18px;
+    box-shadow: 2px 2px 0 #b39a69;
+    position: relative;
+    overflow: visible;
+}
+.progress-fill {
+    height: 100%;
+    border-radius: 0;
+    transition: width 0.8s;
+    position: relative;
+}
+.progress-fill.calories { background: linear-gradient(90deg, #cfff49, #b5dca6); }
+.progress-fill.protein { background: linear-gradient(90deg, #8bff91, #41b348); }
+.progress-fill.carbs { background: linear-gradient(90deg, #ffe082, #fff4a3); }
+.progress-fill.fat { background: linear-gradient(90deg, #ffd180, #b77a4c); }
+.progress-fill.fiber { background: linear-gradient(90deg, #64b5f6, #bae1ff); }
+.progress-overflow {
+    position: absolute; top: 0; left:0; height: 100%; width:100%;
+    background: repeating-linear-gradient(45deg,rgba(244,67,54,0.3),rgba(244,67,54,0.3) 6px,rgba(244,67,54,0.1) 6px,rgba(244,67,54,0.1) 12px);
+    animation: overflow-pulse 2s infinite;
+}
+@keyframes overflow-pulse { 0%,100%{opacity:0.6;} 50%{opacity:1;} }
+/* 压缩后的进度条样式 */
+.progress-item-compact {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.progress-label-compact {
+    font-size: 14px;
+    color: #639643;
+    font-weight: 700;
+    min-width: 70px;
+    text-align: right;
+}
+.progress-bar-compact {
+    background: #7fc4c6;
+    border: 2px solid #397d1c;
+    border-radius: 0;
+    height: 18px;
+    box-shadow: 2px 2px 0 #b39a69;
+    position: relative;
+    overflow: visible;
+    flex: 1;
+}
+.progress-value-compact {
+    font-size: 13px;
+    color: #639643;
+    font-weight: 600;
+    min-width: 100px;
+    padding-left: 8px;
+}
+
+/* 投喂按钮样式 */
+.btn-feed {
+    background: #ff6b6b;
+    color: #fff;
+    border: 3px solid #d63031;
+    border-radius: 0;
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: 2px 2px 0 #b39a69;
+    padding: 12px 20px;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transition: all 0.3s;
+}
+.btn-feed.active {
+    background: #6ad64d;
+    color: #343421;
+    border-color: #397d1c;
+    cursor: pointer;
+    opacity: 1;
+}
+.btn-feed.active:hover {
+    background: #fff4a3;
+    color: #639643;
+    box-shadow: 1px 1px 0 #b39a69;
+}
+
+/* 粉色小球样式 */
+.fat-ball {
+    position: absolute;
+    background: #ff6b8a;
+    border: 2px solid #ff4757;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    top: 0;
+    transition: opacity 0.3s;
+    box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
+}
+
+/* 爱心动画 */
+@keyframes heart-float {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-30px) scale(1.5); opacity: 0; }
+}
+.snake-heart {
+    position: absolute;
+    color: #ff6b8a;
+    font-size: 24px;
+    animation: heart-float 1.5s ease-out;
+    pointer-events: none;
+}
+
+.daily-health-score {
+    background: #fff4a3;
+    border: 3px solid #b39a69;
+    border-radius: 0;
+    margin: 15px 0;
+    color: #397d1c;
+    text-align: center;
+    box-shadow: 2px 2px 0 #b39a69;
+}
+.daily-health-score-value {
+    font-size: 2rem; font-weight: 900; color: #41b348;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 0 #fff;
+}
+.daily-health-score-breakdown { margin-top: 10px; font-size: 13px; color: #639643; }
+
+.input-format-hint {
+    font-size: 12px;
+    color: #639643;
+    margin-top: 6px;
+    padding: 7px;
+    background: #fffde9;
+    border-radius: 0;
+    border-left: 4px solid #b39a69;
+}
+
+.form-group label {
+    font-size: 15px; color: #639643; font-weight: 600; margin-bottom: 7px;
+}
+.form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.form-group label {
+    width: 100px;
+    min-width: 70px;
+    margin-right: 16px;
+    text-align: right;
+    flex-shrink: 0;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.log-entry, .recommendation-item, .nutrition-accuracy-info {
+    background: #d6ffd2;
+    border: 2px solid #639643;
+    border-radius: 0;
+    margin: 5px 0;
+    color: #397d1c;
+    font-size: 13px;
+    box-shadow: 2px 2px 0 #b39a69;
+}
+
+.hidden { display: none !important; }
+.main-page {
+    width: 100%;
+    max-width: 1400px;
+    min-width: 320px;
+    margin: 2.5vh auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-sizing: border-box;
+    padding: 0 min(2vw, 20px);
+}
+.nav-content { 
+    display: none; 
+    position: absolute;
+    z-index: 1000;
+    -webkit-transform: translateZ(0); /* iOS硬件加速 */
+    transform: translateZ(0);
+}
+.nav-dropdown.active .nav-content { 
+    display: block !important; /* 强制显示，iOS兼容 */
+}
+/* iOS Safari专用优化 */
+.icon-btn {
+    -webkit-tap-highlight-color: transparent; /* 移除iOS点击高亮 */
+    -webkit-touch-callout: none; /* 禁用iOS长按菜单 */
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* 桌面端保留悬停效果 */
+@media (hover: hover) and (pointer: fine) {
+    .nav-dropdown:hover .nav-content { 
+        display: block; 
+    }
+}
+
+/* 移动端禁用悬停效果 */
+@media (hover: none) and (pointer: coarse) {
+    .nav-dropdown:hover .nav-content { 
+        display: none; 
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .interface {
+        padding: 20px 16px 16px 16px;
+        margin-bottom: 16px;
+    }
+    
+    .app-header {
+        padding: 8px 16px;
+    }
+    
+    .title {
+        font-size: 1.5rem;
+    }
+    
+    .main-page {
+        padding: 0 10px;
+        gap: 16px;
+    }
+    
+    .form-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .form-group label {
+        text-align: left;
+        margin-bottom: 8px;
+        width: 100%;
+    }
+    
+    input, select, textarea {
+        min-width: auto;
+        width: 100%;
+    }
+
+@media (max-width: 480px) {
+    .interface {
+        padding: 16px 12px;
+    }
+    
+    .title {
+        font-size: 1.2rem;
+        letter-spacing: 1px;
+    }
+    
+    .interface-title {
+        font-size: 1rem;
+        padding: 8px 4px;
+        margin-bottom: 16px;
+    }
+    
+    .progress-section {
+        padding: 8px 4px;
+    }
+}
+
+.mc-btn-row {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 16px auto;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.mc-btn {
+  min-width: 80px;
+  min-height: 60px;
+  background: #e3e3e3;
+  color: #265c21;
+  border: 3.5px solid #639643;
+  box-shadow: 4px 4px 0 #b39a69, 0 6px 24px #8fc87733;
+  border-radius: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-shadow: 1.5px 1.5px 0 #fff4a3, 3px 3px 0 #b6e69b;
+  font-family: inherit;
+  cursor: pointer;
+  margin: 0;
+  outline: none;
+  transition: background 0.12s, color 0.13s, box-shadow 0.15s;
+  position: relative;
+}
+
+.mc-btn:active, .mc-btn.selected {
+  background: #fff4a3;
+  color: #397d1c;
+  box-shadow: 1px 1px 0 #b39a69;
+}
+
+.mc-tab-content {
+  min-height: 280px;
+  width: 100%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  background: #f8ffe7;
+  border: 3.5px solid #639643;
+  box-shadow: 8px 8px 0 #b39a69, 0 8px 32px 0 #8fc87722;
+  border-radius: 0;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 1.02rem;
+  color: #265c21;
+  overflow-x: auto;
+  min-width: 260px;
+  box-sizing: border-box; /* 新增，关键！保证边框随宽度对称 */
+}
+
+@media (max-width: 768px) {
+  .mc-btn-row { gap: 8px; }
+  .mc-btn { min-width: 54px; min-height: 46px; font-size: 0.95rem; padding: 0 8px;}
+  .mc-tab-content { padding: 18px 4vw; font-size: 0.97rem;}
+}
+.data-screen-box {
+  width: 100%;
+  min-height: 180px;
+  min-width: 220px;
+  max-width: 100%;
+  margin: 0 auto;
+  background: #ecf0e8;
+  border: 5px inset #bfc8b4;
+  box-shadow: 0 2px 18px #8fc87733, inset 0 1.5px 8px #dde6d2;
+  border-radius: 10px;
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  font-size: 1.07rem;
+  color: #265c21;
+  transition: background 0.2s, box-shadow 0.15s;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+@media (max-width: 768px) {
+  .data-screen-box {
+    padding: 14px 5px;
+    font-size: 0.97rem;
+    border-radius: 7px;
+  }
+}
+    </style>
+</head>
+<body>
+<div class="app-header" style="display:flex;align-items:center;justify-content:space-between;position:relative;margin-bottom:20px;">
+  <div class="title" style="font-size:2rem;font-weight:600;color:#64b5f6;letter-spacing:2px;">Trii 4.5</div>
+  <div class="header-buttons" style="display:flex;gap:10px;align-items:center;">
+    <div class="nav-dropdown" style="position:relative;">
+<button class="icon-btn" id="navMenuBtn" title="菜单">☰</button>
+     <div class="nav-content" style="right:0;left:auto;top:42px;">
+  <a href="#" data-action="mainPage">主页</a>
+  <a href="#" data-action="dataPage">数据页</a>
+  <a href="#" data-action="reset">重置</a>
+</div>
+    </div>
+  </div>
+</div>
+<div class="main-page" id="mainPage">
+  <!-- 用户信息区域（首次进入才显示，后续隐藏） -->
+  <div class="interface interface-a" id="personalInfoArea">
+      <div class="interface-title">📱 用户信息与营养计划</div>
+      <div id="personalInfo">
+        <div class="form-group">
+            <label>👤 性别</label>
+            <select id="gender">
+                <option value="">请选择性别</option>
+                <option value="male">👨 男性</option>
+                <option value="female">👩 女性</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>📏 身高 (cm)</label>
+            <input type="number" id="height" placeholder="请输入身高，如175" min="100" max="250">
+        </div>
+<div class="form-group">
+    <label for="weight">⚖️ 体重 (kg)</label>
+    <input type="number" id="weight" placeholder="请输入体重，如70" min="30" max="300">
+</div>      
+        <div class="form-group">
+            <label>🎂 年龄</label>
+            <input type="number" id="age" placeholder="请输入年龄，如28" min="16" max="100">
+        </div>
+        <div class="form-group">
+            <label>🎯 健康目标</label>
+            <select id="goal">
+                <option value="">请选择您的目标</option>
+                <option value="lose">🔥 减脂瘦身</option>
+                <option value="gain">💪 增肌塑形</option>
+                <option value="balance">⚖️ 平衡营养</option>
+            </select>
+        </div>
+        <button class="btn" id="btnGenPlan">生成个性化营养计划</button>
+      </div>
+  </div>
+
+<!-- 录入区域，信息录入后常驻上方 -->
+  <div class="interface" id="mealInputArea" style="margin-top:0; display:none;">
+    <div id="mealInput">
+        <div class="meal-counter">
+            今日第 <span id="mealNumber">1</span> 餐（建议每日2-5餐）
+        </div>
+        <div style="display:flex;gap:8px;align-items:stretch;margin-bottom:16px;">
+            <button class="btn" id="btnRandomMeal" type="button" style="flex:0 0 auto;padding:12px 16px;">🎲 随机</button>
+            <textarea id="mealInputRaw" placeholder="如：20250527-0830-32-两个包子，炒猪肉200g，草莓80g" rows="2" style="flex:1;"></textarea>
+            <button class="btn" onclick="submitMeal()" style="flex:0 0 auto;padding:12px 16px;">录入数据</button>
+            <button class="btn btn-feed" id="btnFeedSnake" onclick="feedSnake()" style="flex:0 0 auto;padding:12px 16px;">🐍 投喂</button>
+        </div>
+    </div>
+    <div id="mealFeedback" style="margin-top:16px;"></div>
+  </div>
+
+<!-- 进度条与健康分区域，实时反馈 -->
+<div class="interface" id="progressHealthArea" style="margin-top:0; padding-top:0; display:none;">
+
+<div id="progressSection" class="progress-section">
+    <div class="progress-title">营养达成进度</div>
+    <div class="progress-item-compact">
+        <span class="progress-label-compact">卡路里</span>
+        <div class="progress-bar-compact"><div class="progress-fill calories" id="progressCalories"></div></div>
+        <span class="progress-value-compact" id="progressCaloriesValue"></span>
+    </div>
+    <div class="progress-item-compact">
+        <span class="progress-label-compact">蛋白质</span>
+        <div class="progress-bar-compact"><div class="progress-fill protein" id="progressProtein"></div></div>
+        <span class="progress-value-compact" id="progressProteinValue"></span>
+    </div>
+    <div class="progress-item-compact">
+        <span class="progress-label-compact">碳水</span>
+        <div class="progress-bar-compact"><div class="progress-fill carbs" id="progressCarbs"></div></div>
+        <span class="progress-value-compact" id="progressCarbsValue"></span>
+    </div>
+    <div class="progress-item-compact">
+        <span class="progress-label-compact">脂肪</span>
+        <div class="progress-bar-compact" id="fatProgressBar">
+            <div class="progress-fill fat" id="progressFat"></div>
+            <div id="fatBallsContainer"></div>
+        </div>
+        <span class="progress-value-compact" id="progressFatValue"></span>
+    </div>
+    <div class="progress-item-compact">
+        <span class="progress-label-compact">膳食纤维</span>
+        <div class="progress-bar-compact"><div class="progress-fill fiber" id="progressFiber"></div></div>
+        <span class="progress-value-compact" id="progressFiberValue"></span>
+    </div>
+</div>
+
+          <div class="daily-health-score" id="dailyHealthScore" style="display:none;">
+        <div>今日健康评分</div>
+        <div class="daily-health-score-value" id="healthScoreValue">-</div>
+        <div class="daily-health-score-breakdown" id="healthScoreBreakdown"></div>
+    </div>
+  </div>
+</div>
+
+    <!-- 数据分析页面 -->
+    <div class="data-page" id="dataPage" style="display: none;">
+        <div class="interface interface-c">
+            <div class="interface-title">📊 营养数据分析与健康趋势</div>
+<div class="mc-btn-row" style="display: flex; justify-content: center; gap: 16px; margin: 18px 0 24px 0;">
+  <button class="mc-btn" id="btnOverview">总览</button>
+  <button class="mc-btn" id="btnSearch">检索</button>
+  <button class="mc-btn" id="btnScore">分数</button>
+  <button class="mc-btn" id="btnTrend">趋势</button>
+</div>
+<div class="mc-tab-content">
+  <div id="dataScreenBox" class="data-screen-box"></div>
+</div>
+        </div>
+    </div>
+<script>
+// === USDA全量食物数据库结构示例（请用完整数据替换...）===
+const foodDatabase = {
+    // === 水果类（基于USDA数据）===
+    '香蕉': { 
+        calories: 89, protein: 1.1, carbs: 22.8, fat: 0.3, fiber: 2.6, processing: 1,
+        vitaminA: 3, vitaminC: 8.7, vitaminE: 0.10, vitaminB1: 0.03, vitaminB2: 0.07, vitaminB6: 0.37, folate: 20,
+        calcium: 5, iron: 0.26, magnesium: 27, phosphorus: 22, potassium: 358, sodium: 1, zinc: 0.15
+    },
+    '苹果': { 
+        calories: 52, protein: 0.3, carbs: 13.8, fat: 0.2, fiber: 2.4, processing: 1,
+        vitaminA: 3, vitaminC: 4.6, vitaminE: 0.18, vitaminB1: 0.02, vitaminB2: 0.03, vitaminB6: 0.04, folate: 3,
+        calcium: 6, iron: 0.12, magnesium: 5, phosphorus: 11, potassium: 107, sodium: 1, zinc: 0.04
+    },
+    '橙子': { 
+        calories: 47, protein: 0.9, carbs: 11.8, fat: 0.1, fiber: 2.4, processing: 1,
+        vitaminA: 11, vitaminC: 53.2, vitaminE: 0.18, vitaminB1: 0.09, vitaminB2: 0.04, vitaminB6: 0.06, folate: 40,
+        calcium: 40, iron: 0.10, magnesium: 10, phosphorus: 14, potassium: 181, sodium: 0, zinc: 0.07
+    },
+    '梨': { 
+        calories: 57, protein: 0.4, carbs: 15.2, fat: 0.1, fiber: 3.1, processing: 1,
+        vitaminA: 1, vitaminC: 4.3, vitaminE: 0.12, vitaminB1: 0.01, vitaminB2: 0.03, vitaminB6: 0.03, folate: 7,
+        calcium: 9, iron: 0.18, magnesium: 7, phosphorus: 12, potassium: 116, sodium: 1, zinc: 0.10
+    },
+    '葡萄': { 
+        calories: 67, protein: 0.6, carbs: 17.2, fat: 0.2, fiber: 0.9, processing: 1,
+        vitaminA: 3, vitaminC: 10.8, vitaminE: 0.19, vitaminB1: 0.07, vitaminB2: 0.07, vitaminB6: 0.09, folate: 2,
+        calcium: 10, iron: 0.36, magnesium: 7, phosphorus: 20, potassium: 191, sodium: 3, zinc: 0.07
+    },
+    '西瓜': { 
+        calories: 30, protein: 0.6, carbs: 7.6, fat: 0.2, fiber: 0.4, processing: 1,
+        vitaminA: 28, vitaminC: 8.1, vitaminE: 0.05, vitaminB1: 0.03, vitaminB2: 0.02, vitaminB6: 0.05, folate: 3,
+        calcium: 7, iron: 0.24, magnesium: 10, phosphorus: 11, potassium: 112, sodium: 1, zinc: 0.10
+    },
+    '草莓': { 
+        calories: 32, protein: 0.7, carbs: 7.7, fat: 0.3, fiber: 2.0, processing: 1,
+        vitaminA: 1, vitaminC: 58.8, vitaminE: 0.29, vitaminB1: 0.02, vitaminB2: 0.02, vitaminB6: 0.05, folate: 24,
+        calcium: 16, iron: 0.41, magnesium: 13, phosphorus: 24, potassium: 153, sodium: 1, zinc: 0.14
+    },
+    '菠萝': { 
+        calories: 50, protein: 0.5, carbs: 13.1, fat: 0.1, fiber: 1.4, processing: 1,
+        vitaminA: 3, vitaminC: 47.8, vitaminE: 0.02, vitaminB1: 0.08, vitaminB2: 0.03, vitaminB6: 0.11, folate: 18,
+        calcium: 13, iron: 0.29, magnesium: 12, phosphorus: 8, potassium: 109, sodium: 1, zinc: 0.12
+    },
+    '猕猴桃': { 
+        calories: 61, protein: 1.1, carbs: 14.7, fat: 0.5, fiber: 3.0, processing: 1,
+        vitaminA: 4, vitaminC: 92.7, vitaminE: 1.46, vitaminB1: 0.03, vitaminB2: 0.02, vitaminB6: 0.06, folate: 25,
+        calcium: 34, iron: 0.31, magnesium: 17, phosphorus: 34, potassium: 312, sodium: 3, zinc: 0.14
+    },
+    '柚子': { 
+        calories: 32, protein: 0.6, carbs: 8.1, fat: 0.1, fiber: 1.0, processing: 1,
+        vitaminA: 1, vitaminC: 61, vitaminE: 0.24, vitaminB1: 0.04, vitaminB2: 0.03, vitaminB6: 0.04, folate: 8,
+        calcium: 12, iron: 0.11, magnesium: 8, phosphorus: 8, potassium: 135, sodium: 1, zinc: 0.04
+    },
+    '柠檬': { 
+        calories: 29, protein: 1.1, carbs: 9.3, fat: 0.3, fiber: 2.8, processing: 1,
+        vitaminA: 1, vitaminC: 53, vitaminE: 0.15, vitaminB1: 0.04, vitaminB2: 0.02, vitaminB6: 0.08, folate: 11,
+        calcium: 26, iron: 0.6, magnesium: 8, phosphorus: 16, potassium: 138, sodium: 2, zinc: 0.06
+    },
+    '蓝莓': { 
+        calories: 57, protein: 0.7, carbs: 14.5, fat: 0.3, fiber: 2.4, processing: 1,
+        vitaminA: 3, vitaminC: 9.7, vitaminE: 0.57, vitaminB1: 0.04, vitaminB2: 0.04, vitaminB6: 0.05, folate: 6,
+        calcium: 6, iron: 0.28, magnesium: 6, phosphorus: 12, potassium: 77, sodium: 1, zinc: 0.16
+    },
+
+    // === 主食类 ===
+    '米饭': {
+        calories: 130, protein: 2.7, carbs: 28.2, fat: 0.3, fiber: 0.4, processing: 2,
+        vitaminA: 0, vitaminC: 0, vitaminE: 0.1, vitaminB1: 0.02, vitaminB2: 0.01, vitaminB6: 0.1, folate: 3,
+        calcium: 10, iron: 0.2, magnesium: 12, phosphorus: 43, potassium: 35, sodium: 1, zinc: 0.5
+    },
+    '面条': {
+        calories: 138, protein: 4.5, carbs: 27.9, fat: 0.9, fiber: 1.4, processing: 2,
+        vitaminA: 0, vitaminC: 0, vitaminE: 0.1, vitaminB1: 0.09, vitaminB2: 0.02, vitaminB6: 0.04, folate: 21,
+        calcium: 15, iron: 0.5, magnesium: 18, phosphorus: 49, potassium: 44, sodium: 3, zinc: 0.7
+    },
+    '馒头': {
+        calories: 221, protein: 7.6, carbs: 46.7, fat: 0.5, fiber: 1.2, processing: 3,
+        vitaminA: 0, vitaminC: 0, vitaminE: 0.1, vitaminB1: 0.13, vitaminB2: 0.07, vitaminB6: 0.05, folate: 44,
+        calcium: 34, iron: 1.2, magnesium: 21, phosphorus: 71, potassium: 88, sodium: 5, zinc: 0.7
+    },
+    '全麦面包': {
+        calories: 247, protein: 12, carbs: 41, fat: 4.2, fiber: 7, processing: 3,
+        vitaminA: 1, vitaminC: 0, vitaminE: 0.4, vitaminB1: 0.39, vitaminB2: 0.13, vitaminB6: 0.27, folate: 38,
+        calcium: 107, iron: 2.5, magnesium: 90, phosphorus: 200, potassium: 250, sodium: 250, zinc: 1.5
+    },
+    '燕麦片': {
+        calories: 379, protein: 13.2, carbs: 67.7, fat: 6.5, fiber: 10.1, processing: 2,
+        vitaminA: 0, vitaminC: 0, vitaminE: 0.42, vitaminB1: 0.46, vitaminB2: 0.16, vitaminB6: 0.12, folate: 56,
+        calcium: 54, iron: 4.7, magnesium: 177, phosphorus: 523, potassium: 429, sodium: 2, zinc: 3.1
+    },
+    '玉米': {
+        calories: 96, protein: 3.4, carbs: 21, fat: 1.5, fiber: 2.7, processing: 1,
+        vitaminA: 9, vitaminC: 6.8, vitaminE: 0.07, vitaminB1: 0.20, vitaminB2: 0.06, vitaminB6: 0.09, folate: 46,
+        calcium: 2, iron: 0.52, magnesium: 37, phosphorus: 89, potassium: 270, sodium: 15, zinc: 0.46
+    },
+    '红薯': {
+        calories: 86, protein: 1.6, carbs: 20.1, fat: 0.1, fiber: 3, processing: 1,
+        vitaminA: 709, vitaminC: 2.4, vitaminE: 0.26, vitaminB1: 0.11, vitaminB2: 0.03, vitaminB6: 0.21, folate: 11,
+        calcium: 30, iron: 0.61, magnesium: 25, phosphorus: 47, potassium: 337, sodium: 55, zinc: 0.3
+    },
+
+    // === 蔬菜类 ===
+    '西兰花': {
+        calories: 34, protein: 2.8, carbs: 6.6, fat: 0.4, fiber: 2.6, processing: 1,
+        vitaminA: 31, vitaminC: 89.2, vitaminE: 0.78, vitaminB1: 0.07, vitaminB2: 0.12, vitaminB6: 0.18, folate: 63,
+        calcium: 47, iron: 0.73, magnesium: 21, phosphorus: 66, potassium: 316, sodium: 33, zinc: 0.41
+    },
+    '菠菜': {
+        calories: 23, protein: 2.9, carbs: 3.6, fat: 0.4, fiber: 2.2, processing: 1,
+        vitaminA: 469, vitaminC: 28.1, vitaminE: 2.03, vitaminB1: 0.08, vitaminB2: 0.19, vitaminB6: 0.2, folate: 194,
+        calcium: 99, iron: 2.71, magnesium: 79, phosphorus: 49, potassium: 558, sodium: 79, zinc: 0.53
+    },
+    '胡萝卜': {
+        calories: 41, protein: 0.9, carbs: 9.6, fat: 0.2, fiber: 2.8, processing: 1,
+        vitaminA: 835, vitaminC: 5.9, vitaminE: 0.66, vitaminB1: 0.07, vitaminB2: 0.05, vitaminB6: 0.13, folate: 19,
+        calcium: 33, iron: 0.3, magnesium: 12, phosphorus: 35, potassium: 320, sodium: 69, zinc: 0.24
+    },
+    '番茄': {
+        calories: 18, protein: 0.9, carbs: 3.9, fat: 0.2, fiber: 1.2, processing: 1,
+        vitaminA: 42, vitaminC: 13.7, vitaminE: 0.54, vitaminB1: 0.04, vitaminB2: 0.02, vitaminB6: 0.08, folate: 15,
+        calcium: 10, iron: 0.27, magnesium: 11, phosphorus: 24, potassium: 237, sodium: 5, zinc: 0.17
+    },
+    '黄瓜': {
+        calories: 16, protein: 0.7, carbs: 3.6, fat: 0.1, fiber: 0.5, processing: 1,
+        vitaminA: 5, vitaminC: 2.8, vitaminE: 0.03, vitaminB1: 0.03, vitaminB2: 0.03, vitaminB6: 0.04, folate: 7,
+        calcium: 16, iron: 0.28, magnesium: 13, phosphorus: 24, potassium: 147, sodium: 2, zinc: 0.2
+    },
+    '土豆': {
+        calories: 77, protein: 2.0, carbs: 17.5, fat: 0.1, fiber: 2.2, processing: 1,
+        vitaminA: 0, vitaminC: 19.7, vitaminE: 0.01, vitaminB1: 0.08, vitaminB2: 0.03, vitaminB6: 0.3, folate: 15,
+        calcium: 12, iron: 0.81, magnesium: 23, phosphorus: 57, potassium: 429, sodium: 6, zinc: 0.3
+    },
+    '洋葱': {
+        calories: 40, protein: 1.1, carbs: 9.3, fat: 0.1, fiber: 1.7, processing: 1,
+        vitaminA: 0, vitaminC: 7.4, vitaminE: 0.02, vitaminB1: 0.05, vitaminB2: 0.02, vitaminB6: 0.12, folate: 19,
+        calcium: 23, iron: 0.21, magnesium: 10, phosphorus: 29, potassium: 146, sodium: 4, zinc: 0.17
+    },
+    '茄子': {
+        calories: 25, protein: 1.0, carbs: 5.9, fat: 0.2, fiber: 3.0, processing: 1,
+        vitaminA: 1, vitaminC: 2.2, vitaminE: 0.3, vitaminB1: 0.04, vitaminB2: 0.02, vitaminB6: 0.08, folate: 22,
+        calcium: 9, iron: 0.23, magnesium: 14, phosphorus: 24, potassium: 229, sodium: 2, zinc: 0.16
+    },
+
+    // === 豆类/坚果 ===
+    '黄豆': {
+        calories: 446, protein: 36.5, carbs: 30.2, fat: 19.9, fiber: 9.3, processing: 1,
+        vitaminA: 1, vitaminC: 6, vitaminE: 0.85, vitaminB1: 0.87, vitaminB2: 0.87, vitaminB6: 0.38, folate: 375,
+        calcium: 277, iron: 15.7, magnesium: 280, phosphorus: 704, potassium: 1797, sodium: 2, zinc: 4.9
+    },
+    '豆腐': {
+        calories: 76, protein: 8.1, carbs: 1.9, fat: 4.8, fiber: 0.3, processing: 2,
+        vitaminA: 25, vitaminC: 0, vitaminE: 0.01, vitaminB1: 0.07, vitaminB2: 0.06, vitaminB6: 0.06, folate: 15,
+        calcium: 350, iron: 5.4, magnesium: 30, phosphorus: 97, potassium: 121, sodium: 7, zinc: 0.8
+    },
+    '花生': {
+        calories: 567, protein: 25.8, carbs: 16.1, fat: 49.2, fiber: 8.5, processing: 1,
+        vitaminA: 0, vitaminC: 0, vitaminE: 8.33, vitaminB1: 0.64, vitaminB2: 0.14, vitaminB6: 0.35, folate: 240,
+        calcium: 92, iron: 4.58, magnesium: 168, phosphorus: 376, potassium: 705, sodium: 18, zinc: 3.27
+    },
+    '核桃': {
+        calories: 654, protein: 15.2, carbs: 13.7, fat: 65.2, fiber: 6.7, processing: 1,
+        vitaminA: 20, vitaminC: 1.3, vitaminE: 0.70, vitaminB1: 0.34, vitaminB2: 0.15, vitaminB6: 0.54, folate: 98,
+        calcium: 98, iron: 2.91, magnesium: 158, phosphorus: 346, potassium: 441, sodium: 2, zinc: 3.09
+    },
+
+    // === 肉类、蛋奶类 ===
+    '鸡胸肉': {
+        calories: 165, protein: 31, carbs: 0, fat: 3.6, fiber: 0, processing: 1,
+        vitaminA: 13, vitaminC: 0, vitaminE: 0.27, vitaminB1: 0.07, vitaminB2: 0.05, vitaminB6: 0.64, folate: 4,
+        calcium: 15, iron: 0.7, magnesium: 29, phosphorus: 220, potassium: 256, sodium: 74, zinc: 1
+    },
+    '猪里脊': {
+        calories: 143, protein: 21.5, carbs: 0, fat: 5.4, fiber: 0, processing: 1,
+        vitaminA: 4, vitaminC: 0, vitaminE: 0.2, vitaminB1: 0.93, vitaminB2: 0.23, vitaminB6: 0.59, folate: 5,
+        calcium: 7, iron: 0.8, magnesium: 22, phosphorus: 228, potassium: 362, sodium: 49, zinc: 1.8
+    },
+    '牛肉': {
+        calories: 187, protein: 26.1, carbs: 0, fat: 9.8, fiber: 0, processing: 1,
+        vitaminA: 0, vitaminC: 0, vitaminE: 0.13, vitaminB1: 0.05, vitaminB2: 0.17, vitaminB6: 0.32, folate: 8,
+        calcium: 9, iron: 2.6, magnesium: 21, phosphorus: 174, potassium: 318, sodium: 56, zinc: 4.4
+    },
+    '鸡蛋': {
+        calories: 143, protein: 13, carbs: 1.1, fat: 9.5, fiber: 0, processing: 1,
+        vitaminA: 160, vitaminC: 0, vitaminE: 1.05, vitaminB1: 0.07, vitaminB2: 0.44, vitaminB6: 0.17, folate: 47,
+        calcium: 56, iron: 1.75, magnesium: 12, phosphorus: 198, potassium: 138, sodium: 142, zinc: 1.3
+    },
+    '牛奶': {
+        calories: 54, protein: 3.3, carbs: 5, fat: 1.6, fiber: 0, processing: 2,
+        vitaminA: 46, vitaminC: 1.3, vitaminE: 0.05, vitaminB1: 0.04, vitaminB2: 0.18, vitaminB6: 0.04, folate: 5,
+        calcium: 119, iron: 0.05, magnesium: 11, phosphorus: 93, potassium: 143, sodium: 44, zinc: 0.5
+    },
+    '酸奶': {
+        calories: 61, protein: 3.5, carbs: 4.7, fat: 3.3, fiber: 0, processing: 3,
+        vitaminA: 28, vitaminC: 0.8, vitaminE: 0.06, vitaminB1: 0.04, vitaminB2: 0.18, vitaminB6: 0.04, folate: 7,
+        calcium: 121, iron: 0.05, magnesium: 12, phosphorus: 95, potassium: 155, sodium: 46, zinc: 0.6
+    },
+
+    // === 鱼虾/水产类 ===
+    '鲈鱼': {
+        calories: 97, protein: 18.4, carbs: 0, fat: 2.0, fiber: 0, processing: 1,
+        vitaminA: 13, vitaminC: 1, vitaminE: 0.7, vitaminB1: 0.06, vitaminB2: 0.08, vitaminB6: 0.2, folate: 10,
+        calcium: 16, iron: 0.6, magnesium: 27, phosphorus: 205, potassium: 284, sodium: 51, zinc: 0.8
+    },
+    '三文鱼': {
+        calories: 206, protein: 22, carbs: 0, fat: 13, fiber: 0, processing: 1,
+        vitaminA: 50, vitaminC: 0, vitaminE: 2.8, vitaminB1: 0.23, vitaminB2: 0.38, vitaminB6: 0.93, folate: 25,
+        calcium: 9, iron: 0.8, magnesium: 29, phosphorus: 252, potassium: 363, sodium: 50, zinc: 0.6
+    },
+    '对虾': {
+        calories: 99, protein: 18.3, carbs: 0.9, fat: 1.4, fiber: 0, processing: 1,
+        vitaminA: 46, vitaminC: 0, vitaminE: 1.8, vitaminB1: 0.04, vitaminB2: 0.06, vitaminB6: 0.12, folate: 19,
+        calcium: 70, iron: 1.2, magnesium: 34, phosphorus: 214, potassium: 259, sodium: 148, zinc: 1.3
+    },
+
+    // === 加工食品示例 ===
+    '香肠': {
+        calories: 301, protein: 12, carbs: 2.7, fat: 27, fiber: 0, processing: 5,
+        vitaminA: 17, vitaminC: 0, vitaminE: 0.24, vitaminB1: 0.69, vitaminB2: 0.19, vitaminB6: 0.17, folate: 4,
+        calcium: 21, iron: 1.7, magnesium: 17, phosphorus: 102, potassium: 278, sodium: 917, zinc: 1.7
+    },
+    '咸鸭蛋': {
+        calories: 180, protein: 10.6, carbs: 1.1, fat: 14.2, fiber: 0, processing: 4,
+        vitaminA: 260, vitaminC: 0, vitaminE: 0.87, vitaminB1: 0.03, vitaminB2: 0.36, vitaminB6: 0.17, folate: 54,
+        calcium: 129, iron: 3.1, magnesium: 16, phosphorus: 183, potassium: 121, sodium: 790, zinc: 1.2
+    },
+
+    // === 烹饪方式影响系数（必须放在最后） ===
+    cooking_effects: {
+        stir_fry: { vitaminC_retention: 0.8, vitaminB_retention: 0.9, mineral_retention: 0.95, fat_addition: 2.5 },
+        steaming: { vitaminC_retention: 0.9, vitaminB_retention: 0.95, mineral_retention: 0.98 },
+        boiling: { vitaminC_retention: 0.7, vitaminB_retention: 0.8, mineral_retention: 0.85 },
+        frying: { vitaminC_retention: 0.6, vitaminB_retention: 0.7, mineral_retention: 0.7, fat_addition: 8 },
+        pan_frying: { vitaminC_retention: 0.8, vitaminB_retention: 0.85, mineral_retention: 0.9, fat_addition: 4 }
+    }
+}
+
+// ========== 烹饪方式对营养影响的算法 ==========
+function applyCookingEffects(originalFood, cookingMethod) {
+  const modifiedFood = JSON.parse(JSON.stringify(originalFood));
+  const cookingMethodMap = {
+    '炒': 'stir_fry', '蒸': 'steaming', '水煮': 'boiling', '煮': 'boiling',
+    '炸': 'frying', '油炸': 'frying', '煎': 'pan_frying'
+  };
+  const method = cookingMethodMap[cookingMethod] || 'stir_fry';
+  const effects = foodDatabase.cooking_effects[method];
+  if (!effects) return modifiedFood;
+  if (effects.vitaminC_retention) modifiedFood.vitaminC *= effects.vitaminC_retention;
+  if (effects.vitaminB_retention) {
+    modifiedFood.vitaminB1 *= effects.vitaminB_retention;
+    modifiedFood.vitaminB2 *= effects.vitaminB_retention;
+    modifiedFood.vitaminB6 *= effects.vitaminB_retention;
+    modifiedFood.folate *= effects.vitaminB_retention;
+  }
+  if (effects.mineral_retention) {
+    modifiedFood.calcium *= effects.mineral_retention;
+    modifiedFood.iron *= effects.mineral_retention;
+    modifiedFood.magnesium *= effects.mineral_retention;
+    modifiedFood.phosphorus *= effects.mineral_retention;
+    modifiedFood.potassium *= effects.mineral_retention;
+    modifiedFood.zinc *= effects.mineral_retention;
+  }
+  if (effects.fat_addition) {
+    modifiedFood.fat += effects.fat_addition;
+    modifiedFood.calories += effects.fat_addition * 9;
+  }
+  if (effects.calories_addition) modifiedFood.calories += effects.calories_addition;
+  if (method === 'frying') modifiedFood.processing = Math.min(5, modifiedFood.processing + 2);
+  else if (method === 'stir_fry' || method === 'pan_frying') modifiedFood.processing = Math.min(5, modifiedFood.processing + 1);
+  if (method === 'stir_fry' || method === 'frying' || method === 'pan_frying') modifiedFood.carbs += 1.5;
+  if (method === 'frying') modifiedFood.calories = Math.round(modifiedFood.calories * 1.2);
+  Object.keys(modifiedFood).forEach(key => {
+    if (typeof modifiedFood[key] === 'number' && key !== 'processing') modifiedFood[key] = Math.round(modifiedFood[key] * 100) / 100;
+  });
+  return modifiedFood;
+}
+</script>
+<script>
+// ========== 应用状态管理 ==========
+let appState = {
+    userInfo: {},
+    meals: [],
+    currentMeal: 1,
+    currentDay: 1,
+    plan: {},
+    dailyNutrition: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 },
+    dailyScores: [],
+    nutritionAccuracyStats: { correct: 0, total: 0, usda_matched: 0 }
+};
+
+// ========== 页面切换 ==========
+function switchToMainPage() {
+    document.getElementById('mainPage').style.display = 'flex';
+    document.getElementById('dataPage').style.display = 'none';
+}
+function switchToDataPage() {
+    document.getElementById('mainPage').style.display = 'none';
+    document.getElementById('dataPage').style.display = 'block';
+    // 数据页进度条显示（确保 data-progressSection 显示）
+    var section = document.getElementById('data-progressSection');
+    if(section) section.style.display = '';
+    // 显示营养准确性信息
+    const accuracyInfo = document.getElementById('nutritionAccuracyInfo');
+    if (accuracyInfo) {
+        accuracyInfo.style.display = 'block';
+    }
+    // 刷新数据页内容 - 添加安全检查
+    if (appState.plan && appState.plan.targetCalories) {
+        updateDataProgressBars();
+    }
+    updateDataPageCharts && updateDataPageCharts();
+}
+
+// ========== 菜单切换功能 (iOS兼容增强版本) ==========
+let isMenuOpen = false;
+let menuButton = null;
+let navDropdown = null;
+
+function toggleNavMenu() {
+    console.log('Menu toggle called, current state:', isMenuOpen);
+    
+    if (!navDropdown) {
+        navDropdown = document.querySelector('.nav-dropdown');
+    }
+    
+    if (isMenuOpen) {
+        // 关闭菜单
+        navDropdown.classList.remove('active');
+        isMenuOpen = false;
+        console.log('Menu closed');
+    } else {
+        // 打开菜单
+        navDropdown.classList.add('active');
+        isMenuOpen = true;
+        console.log('Menu opened');
+    }
+}
+
+// 关闭菜单的函数
+function closeNavMenu() {
+    if (!navDropdown) {
+        navDropdown = document.querySelector('.nav-dropdown');
+    }
+    if (navDropdown) {
+        navDropdown.classList.remove('active');
+        isMenuOpen = false;
+        console.log('Menu force closed');
+    }
+}
+
+// 页面加载完成后设置事件监听
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Setting up menu events');
+    
+    // 获取元素引用
+    menuButton = document.getElementById('navMenuBtn');
+    navDropdown = document.querySelector('.nav-dropdown');
+    
+    if (menuButton && navDropdown) {
+        console.log('Menu elements found');
+        
+        // 清除现有事件
+        menuButton.removeAttribute('onclick');
+        
+        // 创建统一的点击处理函数
+        function handleMenuClick(e) {
+            console.log('Menu button event triggered:', e.type);
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            // 小延迟确保事件处理完成
+            setTimeout(toggleNavMenu, 10);
+            return false;
+        }
+        
+        // 绑定点击和触摸事件
+        menuButton.addEventListener('click', handleMenuClick, { capture: true, passive: false });
+        menuButton.addEventListener('touchend', handleMenuClick, { capture: true, passive: false });
+        
+        // 防止触摸开始时的默认行为
+        menuButton.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+        
+    } else {
+        console.error('Menu elements not found!');
+    }
+    
+    // 点击页面其他位置关闭菜单
+    function handleDocumentClick(event) {
+        if (!navDropdown || !menuButton) return;
+        
+        // 检查是否点击在菜单区域外
+        if (!navDropdown.contains(event.target) && event.target !== menuButton) {
+            closeNavMenu();
+        }
+    }
+    
+    // 延迟绑定文档事件，避免立即触发
+    setTimeout(function() {
+        document.addEventListener('click', handleDocumentClick, { capture: true });
+        document.addEventListener('touchstart', handleDocumentClick, { capture: true });
+    }, 100);
+    
+    // 菜单项点击后关闭菜单
+   setTimeout(function() {
+    const navLinks = document.querySelectorAll('.nav-content a');
+    navLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault(); // 阻止 <a> 跳转
+            const action = link.getAttribute('data-action');
+            // 菜单逻辑
+            if (action === 'mainPage') {
+                switchToMainPage();
+            } else if (action === 'dataPage') {
+                switchToDataPage();
+            } else if (action === 'reset') {
+                resetApp();
+            }
+            setTimeout(closeNavMenu, 50);
+        }, false);
+        // 如遇安卓部分浏览器 touchend 不冒泡，可考虑补充绑定
+        link.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            const action = link.getAttribute('data-action');
+            if (action === 'mainPage') {
+                switchToMainPage();
+            } else if (action === 'dataPage') {
+                switchToDataPage();
+            } else if (action === 'reset') {
+                resetApp();
+            }
+            setTimeout(closeNavMenu, 50);
+        }, false);
+    });
+}, 200);
+});
+
+// ========== 日志与消息 ==========
+function addMessage(sender, message) {
+    const chatArea = document.getElementById('mealFeedback');
+    chatArea.innerHTML = `<div class="message ${sender}">${message}</div>`;
+}
+function addLogEntry(message, type = 'info') {
+    // 暂时禁用日志功能，防止报错导致主页面失效
+    return;
+}
+
+// ========== BMR与目标卡路里 ==========
+function calculateBMR(gender, weight, height, age) {
+    let bmr;
+    if (gender === 'male') {
+        bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+    } else {
+        bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+    }
+    addLogEntry(`BMR计算: ${gender === 'male' ? '男性' : '女性'}, ${weight}kg, ${height}cm, ${age}岁 => ${bmr.toFixed(1)} kcal`, 'calculation');
+    return bmr;
+}
+function calculateTargetCalories(bmr, goal) {
+    const activityFactor = 1.6;
+    const maintenanceCalories = bmr * activityFactor;
+    let targetCalories;
+    switch (goal) {
+        case 'lose': targetCalories = maintenanceCalories - 500; break;
+        case 'gain': targetCalories = maintenanceCalories + 300; break;
+        default: targetCalories = maintenanceCalories;
+    }
+    addLogEntry(`目标卡路里计算: BMR(${bmr.toFixed(1)}) * 活动系数(${activityFactor}) = ${maintenanceCalories.toFixed(1)} => 目标: ${targetCalories.toFixed(1)} kcal`, 'calculation');
+    return targetCalories;
+}
+
+// ========== 用户信息提交 ==========
+function submitPersonalInfo() {
+    const gender = document.getElementById('gender').value;
+    const height = parseFloat(document.getElementById('height').value);
+    const weight = parseFloat(document.getElementById('weight').value);
+    const age = parseInt(document.getElementById('age').value);
+    const goal = document.getElementById('goal').value;
+
+    if (!gender || !height || !weight || !age || !goal) {
+        alert('请填写所有字段');
+        return;
+    }
+    setTimeout(() => {
+        appState.userInfo = { gender, height, weight, age, goal };
+        const bmr = calculateBMR(gender, weight, height, age);
+        const targetCalories = calculateTargetCalories(bmr, goal);
+        const targetProtein = Math.round(weight * (goal === 'gain' ? 2.2 : goal === 'lose' ? 1.8 : 1.2));
+        const targetCarbs = Math.round(targetCalories * 0.5 / 4);
+        const targetFat = Math.round(targetCalories * 0.25 / 9);
+        const targetFiber = Math.round(weight * 0.4);
+
+        appState.plan = {
+            bmr: Math.round(bmr),
+            targetCalories: Math.round(targetCalories),
+            targetProtein,
+            targetCarbs,
+            targetFat,
+            targetFiber,
+            expectedDays: 30
+        };
+document.getElementById('mealInputArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // 更新界面
+document.getElementById('personalInfoArea').style.display = 'none';
+document.getElementById('mainPage').style.display = 'flex';
+document.getElementById('dataPage').style.display = 'none';
+document.getElementById('mealInputArea').style.display = 'block';
+document.getElementById('progressHealthArea').style.display = 'block';
+
+    
+        const goalText = goal === 'gain' ? '💪 增肌塑形' : goal === 'lose' ? '🔥 减脂瘦身' : '⚖️ 平衡营养';
+        addLogEntry(`用户档案初始化完成: ${gender === 'male' ? '男性' : '女性'}, ${height}cm, ${weight}kg, ${age}岁, 目标: ${goalText}`, 'success');
+        addLogEntry(`营养计划生成: ${Math.round(targetCalories)}kcal, 蛋白质: ${targetProtein}g, 碳水: ${targetCarbs}g, 脂肪: ${targetFat}g, 纤维: ${targetFiber}g`, 'success');
+           }, 1000);
+}
+
+// ========== V4.4食物智能解析主函数 ==========
+function parseFoodInput(foodInput) {
+    const nutrition = {
+        calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, processing: 0,
+        vitaminA: 0, vitaminC: 0, vitaminE: 0, vitaminB1: 0, vitaminB2: 0, vitaminB6: 0, folate: 0,
+        calcium: 0, iron: 0, magnesium: 0, phosphorus: 0, potassium: 0, sodium: 0, zinc: 0
+    };
+    const items = foodInput.split(/[，,、]/);
+    let totalWeight = 0, recognizedItems = 0, totalProcessingScore = 0, micronutrientTypes = new Set(), usdaMatches = 0;
+    addLogEntry(`V4.4解析食物输入: "${foodInput}"`, 'calculation');
+
+    items.forEach(item => {
+        let foodName = item.trim();
+        let amount = 100;
+        const match = foodName.match(/(.+?)(\d+)g?/);
+        if (match) {
+            foodName = match[1].trim();
+            amount = parseInt(match[2]);
+        } else {
+            const numMatch = foodName.match(/(.*?)([一二三四五六七八九十\d]+)个?(.+)/);
+            if (numMatch) {
+                const num = numMatch[2];
+                const itemName = numMatch[3] || numMatch[1];
+                const numValue = isNaN(parseInt(num)) ?
+                    {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5}[num] || 1 : parseInt(num);
+                if (itemName.includes('包子')) amount = numValue * 80;
+                else if (itemName.includes('饺子')) amount = numValue * 25;
+                else if (itemName.includes('鸡蛋')) amount = numValue * 50;
+                else amount = numValue * 50;
+                foodName = itemName;
+            }
+        }
+        totalWeight += amount;
+
+        let foundFood = null, matchedKey = '', isUsdaMatch = false;
+        if (foodDatabase[foodName]) {
+            foundFood = foodDatabase[foodName]; matchedKey = foodName; isUsdaMatch = true;
+        } else {
+            const cookingMethods = ['炒', '蒸', '水煮', '炸', '烤', '煎', '煮'];
+            let baseFoodName = foodName, cookingMethod = null;
+            for (const method of cookingMethods) {
+                if (foodName.includes(method)) {
+                    baseFoodName = foodName.replace(method, '').trim(); cookingMethod = method; break;
+                }
+            }
+            const possibleNames = [
+                foodName, cookingMethod ? (cookingMethod + baseFoodName) : null,
+                cookingMethod ? (baseFoodName + cookingMethod) : null, baseFoodName
+            ].filter(Boolean);
+
+            for (const possibleName of possibleNames) {
+                if (foodDatabase[possibleName]) {
+                    foundFood = foodDatabase[possibleName]; matchedKey = possibleName; isUsdaMatch = true; break;
+                }
+            }
+            if (!foundFood) {
+                for (const [key, value] of Object.entries(foodDatabase)) {
+                    if (key === 'cooking_effects') continue;
+                    if (baseFoodName.includes(key) || key.includes(baseFoodName)) {
+                        foundFood = value; matchedKey = key;
+                        if (cookingMethod && !foodName.includes(matchedKey)) {
+                            foundFood = applyCookingEffects(foundFood, cookingMethod);
+                            matchedKey += `(${cookingMethod}处理)`;
+                        }
+                        isUsdaMatch = true; break;
+                    }
+                }
+            }
+        }
+
+        if (foundFood) {
+            const factor = amount / 100;
+            nutrition.calories += foundFood.calories * factor;
+            nutrition.protein += foundFood.protein * factor;
+            nutrition.carbs += foundFood.carbs * factor;
+            nutrition.fat += foundFood.fat * factor;
+            nutrition.fiber += foundFood.fiber * factor;
+            totalProcessingScore += (foundFood.processing || 1) * amount;
+            nutrition.vitaminA += foundFood.vitaminA * factor;
+            nutrition.vitaminC += foundFood.vitaminC * factor;
+            nutrition.vitaminE += foundFood.vitaminE * factor;
+            nutrition.vitaminB1 += foundFood.vitaminB1 * factor;
+            nutrition.vitaminB2 += foundFood.vitaminB2 * factor;
+            nutrition.vitaminB6 += foundFood.vitaminB6 * factor;
+            nutrition.folate += foundFood.folate * factor;
+            nutrition.calcium += foundFood.calcium * factor;
+            nutrition.iron += foundFood.iron * factor;
+            nutrition.magnesium += foundFood.magnesium * factor;
+            nutrition.phosphorus += foundFood.phosphorus * factor;
+            nutrition.potassium += foundFood.potassium * factor;
+            nutrition.sodium += foundFood.sodium * factor;
+            nutrition.zinc += foundFood.zinc * factor;
+            const micronutrients = ['vitaminA', 'vitaminC', 'vitaminE', 'vitaminB1', 'vitaminB2', 'vitaminB6', 'folate', 'calcium', 'iron', 'magnesium', 'phosphorus', 'potassium', 'zinc'];
+            micronutrients.forEach(nutrient => {
+                if (foundFood[nutrient] * factor > 0.1) { micronutrientTypes.add(nutrient); }
+            });
+            recognizedItems++;
+            if (isUsdaMatch) usdaMatches++;
+            appState.nutritionAccuracyStats.correct++;
+            appState.nutritionAccuracyStats.total++;
+            if (isUsdaMatch) appState.nutritionAccuracyStats.usda_matched++;
+            addLogEntry(`USDA匹配成功: "${foodName}" (${amount}g) => ${matchedKey} | +${(foundFood.calories * factor).toFixed(1)}kcal, 脂肪: ${(foundFood.fat * factor).toFixed(1)}g`, 'calculation');
+        } else {
+            appState.nutritionAccuracyStats.total++;
+            addLogEntry(`食物未识别: "${foodName}" (${amount}g) - 建议标明烹饪方式`, 'warning');
+        }
+    });
+
+    nutrition.processing = totalWeight > 0 ? Math.round(totalProcessingScore / totalWeight) : 0;
+    return {
+        calories: Math.round(nutrition.calories),
+        protein: Math.round(nutrition.protein * 10) / 10,
+        carbs: Math.round(nutrition.carbs * 10) / 10,
+        fat: Math.round(nutrition.fat * 10) / 10,
+        fiber: Math.round(nutrition.fiber * 10) / 10,
+        processing: nutrition.processing,
+        recognizedItems, totalItems: items.length, usdaMatches, micronutrientCount: micronutrientTypes.size,
+        vitaminA: Math.round(nutrition.vitaminA * 100) / 100,
+        vitaminC: Math.round(nutrition.vitaminC * 100) / 100,
+        vitaminE: Math.round(nutrition.vitaminE * 100) / 100,
+        vitaminB1: Math.round(nutrition.vitaminB1 * 100) / 100,
+        vitaminB2: Math.round(nutrition.vitaminB2 * 100) / 100,
+        vitaminB6: Math.round(nutrition.vitaminB6 * 100) / 100,
+        folate: Math.round(nutrition.folate * 100) / 100,
+        calcium: Math.round(nutrition.calcium * 100) / 100,
+        iron: Math.round(nutrition.iron * 100) / 100,
+        magnesium: Math.round(nutrition.magnesium * 100) / 100,
+        phosphorus: Math.round(nutrition.phosphorus * 100) / 100,
+        potassium: Math.round(nutrition.potassium * 100) / 100,
+        sodium: Math.round(nutrition.sodium * 100) / 100,
+        zinc: Math.round(nutrition.zinc * 100) / 100
+    };
+}
+
+</script>
+<script>
+// ========== 餐食录入提交 ==========
+function submitMeal() {
+    const inputRaw = document.getElementById('mealInputRaw').value.trim();
+    if (!inputRaw) {
+        addMessage('user', '请录入本餐数据！');
+        return;
+    }
+    // 格式：20250527-0830-32-两个包子，炒猪肉200g，草莓80g
+    const match = inputRaw.match(/^(\d{8})-(\d{4})-(\d{1,3})-(.+)$/);
+    if (!match) {
+        addMessage('user', '格式错误。请参考：20250527-0830-32-两个包子，炒猪肉200g，草莓80g');
+        return;
+    }
+    const date = match[1];
+    const time = match[2];
+    const duration = parseInt(match[3]);
+    const mealContent = match[4];
+    if (duration < 5 || duration > 120) {
+        addMessage('user', '用餐时长应在5~120分钟之间');
+        return;
+    }
+    const nutrition = parseFoodInput(mealContent);
+    appState.meals.push({
+        date,        // 20250527
+        time,        // 0830
+        duration,    // 32
+        mealContent, // 两个包子，炒猪肉200g，草莓80g
+        nutrition,
+        mealNumber: appState.meals.filter(m => m.date === date).length + 1,
+        food: mealContent
+    });
+
+    // 更新每日营养总计
+   // 录入后，重新统计今日摄入（仅当天三餐累计）
+const mealsToday = appState.meals.filter(m => m.date === date);
+appState.dailyNutrition = { calories:0, protein:0, carbs:0, fat:0, fiber:0 };
+mealsToday.forEach(m => {
+    appState.dailyNutrition.calories += m.nutrition.calories;
+    appState.dailyNutrition.protein  += m.nutrition.protein;
+    appState.dailyNutrition.carbs    += m.nutrition.carbs;
+    appState.dailyNutrition.fat      += m.nutrition.fat;
+    appState.dailyNutrition.fiber    += m.nutrition.fiber;
+});
+    generateMealFeedback(appState.meals[appState.meals.length-1]);
+    updateProgressBars();
+    updateDailyHealthScore();
+       // 统计今日已录入餐数，当前餐为“已录入+1”
+// 统计当前输入餐的日期
+const todayMeals = appState.meals.filter(m => m.date === date);
+let nextMealNumber = todayMeals.length + 1;
+if (nextMealNumber > 3) nextMealNumber = 1;
+appState.currentMeal = nextMealNumber;
+document.getElementById('mealNumber').textContent = nextMealNumber;
+    document.getElementById('mealInputRaw').value = '';
+}
+// ========== 随机饮食数据生成功能 ==========
+
+// 【配置】可根据你数据库增删烹饪方式与单位
+const foodOptions = [
+  { name: "鸡蛋", unit: "个", cooks: ["煮", "炒", "蒸"] },
+  { name: "米饭", unit: "g", cooks: ["蒸"] },
+  { name: "苹果", unit: "个", cooks: ["生吃"] },
+  { name: "牛肉", unit: "g", cooks: ["炒", "煮", "红烧"] },
+  { name: "土豆", unit: "g", cooks: ["蒸", "炒"] },
+  { name: "西兰花", unit: "g", cooks: ["炒", "蒸"] },
+  { name: "鸡胸肉", unit: "g", cooks: ["煮", "炒"] }
+  // ...按需补全
+];
+
+// 早中晚餐时间段
+const mealTimeRanges = [
+  { name: "早餐", min: 700, max: 930 },
+  { name: "午餐", min: 1150, max: 1250 },   // 更集中
+  { name: "晚餐", min: 1730, max: 2030 }
+];
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function getLastMeal() {
+  if (!appState.meals || appState.meals.length === 0) return null;
+  return appState.meals[appState.meals.length - 1];
+}
+function getMealsCountOnDate(date) {
+  return appState.meals ? appState.meals.filter(m => m.date === date).length : 0;
+}
+function getNextDate(dateStr) {
+  const y = Number(dateStr.slice(0, 4)), m = Number(dateStr.slice(4, 6)), d = Number(dateStr.slice(6, 8));
+  const date = new Date(y, m - 1, d + 1);
+  const mm = (date.getMonth() + 1).toString().padStart(2, "0");
+  const dd = date.getDate().toString().padStart(2, "0");
+  return `${date.getFullYear()}${mm}${dd}`;
+}
+function randomMealTime(mealIdx) {
+  const mt = mealTimeRanges[mealIdx];
+  // 随机小时和分钟，分钟只在 0-59
+  const minHour = Math.floor(mt.min / 100);
+  const maxHour = Math.floor(mt.max / 100);
+  let hour = randomInt(minHour, maxHour);
+
+  // 定义对应小时的允许分钟区间
+  let minMin = 0, maxMin = 59;
+  if (hour === minHour) minMin = mt.min % 100;
+  if (hour === maxHour) maxMin = mt.max % 100;
+
+  let min = randomInt(minMin, maxMin);
+
+  return `${hour.toString().padStart(2,"0")}${min.toString().padStart(2,"0")}`;
+}
+function randomMealContent() {
+  let n = randomInt(3, 5);
+  let items = [];
+  let usedIdx = new Set();
+  while (items.length < n) {
+    let idx = randomInt(0, foodOptions.length - 1);
+    if (usedIdx.has(idx)) continue;
+    usedIdx.add(idx);
+    const food = foodOptions[idx];
+    const cook = food.cooks[randomInt(0, food.cooks.length - 1)];
+    const amount = food.unit === "个" ? randomInt(1, 3) : randomInt(60, 250);
+    items.push(`${cook}${food.name}${amount}${food.unit}`);
+  }
+  return items.join("，");
+}
+function randomDuration() {
+  return randomInt(15, 50);
+}
+function generateRandomMealInput() {
+ const lastMeal = getLastMeal();
+let date, mealIdx, mealNumber, time, duration;
+
+// 当前日期
+let today;
+if (!lastMeal) {
+    // 首餐，今天早餐
+    const now = new Date();
+    date = now.getFullYear().toString() + (now.getMonth()+1).toString().padStart(2,"0") + now.getDate().toString().padStart(2,"0");
+    mealIdx = 0; // 早餐
+    mealNumber = 1;
+} else {
+    // 判断最后一餐的日期
+    date = lastMeal.date;
+    const mealsToday = appState.meals.filter(m => m.date === date);
+    mealNumber = mealsToday.length + 1;
+    mealIdx = mealsToday.length; // 0=早餐，1=午餐，2=晚餐
+    if (mealNumber > 3) {
+        // 三餐满了，转入下一天的早餐
+        date = getNextDate(date);
+        mealNumber = 1;
+        mealIdx = 0;
+    }
+}
+time = randomMealTime(mealIdx);
+duration = randomDuration();
+
+const content = randomMealContent();
+return `${date}-${time}-${duration}-${content}`;
+}
+
+// 按钮事件绑定
+
+// ========== 餐食反馈（包含烹饪方式与建议） ==========
+function generateMealFeedback(meal) {
+    addMessage('ai', ''); // 什么也不显示
+}
+
+// ========== 进度条、健康评分、准确率UI ==========
+function updateProgressBars() {
+    const plan = appState.plan;
+    const curr = appState.dailyNutrition;
+    function updateBar(id, value, max) {
+const bar = document.getElementById(id);
+if (!bar) return;
+        const percent = Math.min(100, Math.round((value / max) * 100));
+        bar.style.width = percent + '%';
+        if (percent > 100) {
+            bar.classList.add('progress-overflow');
+        } else {
+            bar.classList.remove('progress-overflow');
+        }
+    }
+    updateBar('progressCalories', curr.calories, plan.targetCalories);
+    updateBar('progressProtein', curr.protein, plan.targetProtein);
+    updateBar('progressCarbs', curr.carbs, plan.targetCarbs);
+    updateBar('progressFat', curr.fat, plan.targetFat);
+    updateBar('progressFiber', curr.fiber, plan.targetFiber);
+
+document.getElementById('progressCaloriesValue').textContent = `${curr.calories} / ${plan.targetCalories} kcal`;
+    document.getElementById('progressProteinValue').textContent = `${curr.protein.toFixed(2)} / ${plan.targetProtein} g`;
+    document.getElementById('progressCarbsValue').textContent = `${curr.carbs.toFixed(2)} / ${plan.targetCarbs} g`;
+    document.getElementById('progressFatValue').textContent = `${curr.fat.toFixed(2)} / ${plan.targetFat} g`;
+    document.getElementById('progressFiberValue').textContent = `${curr.fiber.toFixed(2)} / ${plan.targetFiber} g`;
+// 更新投喂按钮状态
+    updateFeedButtonState();
+}
+
+// ========== 数据页进度条、健康分显示 ==========
+// （新代码，直接插入即可）
+function updateDataProgressBars() {
+    // 简单的安全检查，如果没有计划数据就不执行
+    if (!appState.plan || !appState.plan.targetCalories) {
+        return;
+    }
+    
+    const plan = appState.plan;
+    const curr = appState.dailyNutrition;
+    
+    function updateBar(id, value, max) {
+        const bar = document.getElementById(id);
+        if (!bar) return;
+        const percent = Math.min(100, Math.round((value / max) * 100));
+        bar.style.width = percent + '%';
+        if (percent > 100) {
+            bar.classList.add('progress-overflow');
+        } else {
+            bar.classList.remove('progress-overflow');
+        }
+    }
+    
+    function updateText(id, text) {
+        const element = document.getElementById(id);
+        if (!element) return;
+        element.textContent = text;
+    }
+    
+    updateBar('data-progressCalories', curr.calories, plan.targetCalories);
+    updateBar('data-progressProtein', curr.protein, plan.targetProtein);
+    updateBar('data-progressCarbs', curr.carbs, plan.targetCarbs);
+    updateBar('data-progressFat', curr.fat, plan.targetFat);
+    updateBar('data-progressFiber', curr.fiber, plan.targetFiber);
+
+    updateText('data-progressCaloriesValue', `${curr.calories} / ${plan.targetCalories} kcal`);
+    updateText('data-progressProteinValue', `${curr.protein} / ${plan.targetProtein} g`);
+    updateText('data-progressCarbsValue', `${curr.carbs} / ${plan.targetCarbs} g`);
+    updateText('data-progressFatValue', `${curr.fat} / ${plan.targetFat} g`);
+    updateText('data-progressFiberValue', `${curr.fiber} / ${plan.targetFiber} g`);
+}
+
+// ========== 健康评分计算 ==========
+function calculateNutritionDensity(nutrition) {
+    if (nutrition.calories <= 0) return 0;
+    // 1. 基础营养素密度 (40%)
+    const proteinDensity = (nutrition.protein * 4) / nutrition.calories;
+    const fiberDensity = (nutrition.fiber * 2) / nutrition.calories;
+    const basicDensityScore = Math.min(40, (proteinDensity + fiberDensity) * 100);
+    // 2. 微量元素多样性评分 (30%)
+    const micronutrientScore = Math.min(30, nutrition.micronutrientCount * 2.5);
+    // 3. 维生素密度评分 (20%)
+    const vitaminTotal = nutrition.vitaminA/100 + nutrition.vitaminC/10 + nutrition.vitaminE/5 +
+        nutrition.vitaminB1*100 + nutrition.vitaminB2*50 + nutrition.vitaminB6*25 + nutrition.folate/10;
+    const vitaminDensity = Math.min(20, (vitaminTotal / nutrition.calories) * 1000);
+    // 4. 矿物质密度评分 (10%)
+    const mineralTotal = nutrition.calcium/100 + nutrition.iron*10 + nutrition.magnesium/10 +
+        nutrition.phosphorus/100 + nutrition.potassium/100 + nutrition.zinc*5;
+    const mineralDensity = Math.min(10, (mineralTotal / nutrition.calories) * 100);
+    const totalDensityScore = basicDensityScore + micronutrientScore + vitaminDensity + mineralDensity;
+    addLogEntry(`V4.4营养密度计算完成: 基础${basicDensityScore.toFixed(1)}/40 + 多样性${micronutrientScore.toFixed(1)}/30 + 维生素${vitaminDensity.toFixed(1)}/20 + 矿物质${mineralDensity.toFixed(1)}/10 = ${totalDensityScore.toFixed(1)}/100`, 'calculation');
+    return Math.round(totalDensityScore * 10) / 10;
+}
+
+function updateDailyHealthScore() {
+    const current = appState.dailyNutrition;
+    const target = appState.plan;
+    const todayMeals = appState.meals;
+    if (!todayMeals.length) return;
+    let totalScore = 0;
+    // 1. 基础营养摄入达成率 (25%)
+    let nutritionScore = 0;
+    const nutrients = [
+        { current: current.calories, target: target.targetCalories },
+        { current: current.protein, target: target.targetProtein },
+        { current: current.carbs, target: target.targetCarbs },
+        { current: current.fat, target: target.targetFat },
+        { current: current.fiber, target: target.targetFiber }
+    ];
+    nutrients.forEach(nutrient => {
+        const ratio = nutrient.current / nutrient.target;
+        let score = 0;
+        if (ratio >= 0.85 && ratio <= 1.15) score = 5;
+        else if (ratio >= 0.7 && ratio <= 1.3) score = 4;
+        else if (ratio >= 0.5 && ratio <= 1.5) score = 2;
+        else score = 1;
+        nutritionScore += score;
+    });
+    totalScore += nutritionScore;
+    // 2. 营养密度评分 (25%)
+    let densityScore = 0;
+    todayMeals.forEach(meal => {
+        densityScore += calculateNutritionDensity(meal.nutrition);
+    });
+    densityScore = Math.min(25, densityScore / todayMeals.length * 0.25);
+    totalScore += densityScore;
+    // 3. 食物加工程度评分 (15%)
+    const avgProcessing = todayMeals.reduce((sum, meal) => sum + meal.nutrition.processing, 0) / todayMeals.length;
+    const processingScore = Math.max(0, 15 - Math.round(avgProcessing * 3));
+    totalScore += processingScore;
+    // 4. 进餐时间及窗口评分 (15%)
+    let rhythmScore = 0;
+    if (todayMeals.length >= 2) {
+        const avgDuration = todayMeals.reduce((sum, meal) => sum + meal.duration, 0) / todayMeals.length;
+        if (avgDuration >= 20 && avgDuration <= 40) rhythmScore += 7.5;
+        else if (avgDuration >= 15 && avgDuration <= 50) rhythmScore += 5;
+        else rhythmScore += 2;
+        // 用餐分布
+        rhythmScore += Math.min(7.5, todayMeals.length * 2.5);
+    } else {
+        rhythmScore += 3;
+    }
+    totalScore += rhythmScore;
+    // 5. USDA数据匹配率评分 (20%)
+    const usdaMatchRate = appState.nutritionAccuracyStats.total > 0 ?
+        (appState.nutritionAccuracyStats.usda_matched / appState.nutritionAccuracyStats.total) : 0;
+    totalScore += Math.round(usdaMatchRate * 20);
+
+    // 最终得分限制
+    totalScore = Math.min(100, Math.round(totalScore));
+    // 更新UI
+// 检查当日是否有三餐完整数据
+const currentDate = appState.meals.length > 0 ? appState.meals[appState.meals.length - 1].date : null;
+const todayMealsCount = currentDate ? appState.meals.filter(m => m.date === currentDate).length : 0;
+
+if (todayMealsCount >= 3) {
+  document.getElementById('dailyHealthScore').style.display = 'block';
+  document.getElementById('healthScoreValue').textContent = totalScore;
+  document.getElementById('healthScoreBreakdown').innerHTML =
+        `基础达成率: ${nutritionScore}/25 | 营养密度: ${densityScore.toFixed(1)}/25 | 加工: ${processingScore}/15 | 进餐节律: ${rhythmScore.toFixed(1)}/15 | USDA匹配: ${(usdaMatchRate*100).toFixed(1)}%`;
+} else {
+  document.getElementById('dailyHealthScore').style.display = 'block';
+  document.getElementById('healthScoreValue').textContent = '计算中';
+  document.getElementById('healthScoreBreakdown').innerHTML = '健康分计算中...';
+}
+}
+
+
+// ========== 数据趋势等功能（简单折线图/模拟） ==========
+function updateDataPageCharts() {
+    // 这里可对接Chart.js或自定义canvas作折线图
+    // 简单显示累计健康评分趋势
+    // 可扩展
+}
+
+// ========== 重置功能 ==========
+function resetApp() {
+    if (!confirm('确定要重置所有数据吗？')) return;
+    location.reload();
+}
+// ===== 数据页四大按钮切换功能 =====
+
+let currentDataTab = 'overview';
+
+// 切换选中态
+function setTabSelected(tab) {
+  ['btnOverview', 'btnSearch', 'btnScore', 'btnTrend'].forEach(id => {
+    document.getElementById(id).classList.remove('selected');
+  });
+  document.getElementById('btn' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('selected');
+}
+
+// 显示“总览”
+function showOverviewTab() {
+  setTabSelected('overview');
+  currentDataTab = 'overview';
+
+  // 先展示专属营养计划
+  let html = `<div style="font-size:1.09rem;font-weight:700;margin-bottom:10px;">专属营养计划</div>`;
+  if (appState.plan && appState.plan.targetCalories) {
+    const goalText =
+      appState.userInfo.goal === 'gain' ? '💪 增肌塑形' :
+      appState.userInfo.goal === 'lose' ? '🔥 减脂瘦身' :
+      '⚖️ 平衡营养';
+    html += `
+      <div style="line-height:2;margin-bottom:12px;">
+      🎯 目标：${goalText}<br>
+      🔥 每日卡路里：${appState.plan.targetCalories}kcal<br>
+      💪 每日蛋白质：${appState.plan.targetProtein}g<br>
+      🍞 每日碳水化合物：${appState.plan.targetCarbs}g<br>
+      🥑 每日脂肪：${appState.plan.targetFat}g<br>
+      🌾 每日膳食纤维：${appState.plan.targetFiber}g<br>
+      </div>
+    `;
+  } else {
+    html += `<div style="color:#999;">暂未生成专属计划，请先在主页录入信息。</div>`;
+  }
+
+  // 再追加全部餐食数据记录
+  html += `<div style="font-size:1.04rem;font-weight:700;margin:18px 0 8px 0;">信息交互总览记录</div>`;
+  if (!appState.meals || appState.meals.length === 0) {
+    html += `<div style="color:#999;">暂无任何数据，请先在主页录入饮食信息。</div>`;
+  } else {
+    html += appState.meals.map((meal, idx) => `
+      <div style="margin-bottom:16px;padding:10px 0;border-bottom:1.5px dashed #c1eab8;">
+        <div>第${meal.mealNumber}餐 | 日期：${meal.date} ${meal.time} | 用时：${meal.duration}分钟</div>
+        <div>内容：${meal.mealContent}</div>
+        <div>热量：${meal.nutrition.calories}kcal；蛋白质：${meal.nutrition.protein}g；碳水：${meal.nutrition.carbs}g；脂肪：${meal.nutrition.fat}g；纤维：${meal.nutrition.fiber}g</div>
+      </div>
+    `).join('');
+  }
+  document.getElementById('dataScreenBox').innerHTML = html;
+}
+
+// 显示“检索”
+function showSearchTab() {
+  setTabSelected('search');
+  currentDataTab = 'search';
+  // 获取所有已录入的唯一日期
+  const uniqueDates = [...new Set(appState.meals.map(meal => meal.date))];
+  let html = `<div style="margin-bottom:18px;">
+    <label style="font-size:1rem;">选择日期：</label>
+    <select id="searchDateSelect" style="font-size:1rem;padding:4px 12px;">
+      <option value="">请选择日期</option>
+      ${uniqueDates.map(d => `<option value="${d}">${d}</option>`).join('')}
+    </select>
+  </div>
+  <div id="searchResult"></div>`;
+  document.getElementById('dataScreenBox').innerHTML = html;
+  document.getElementById('searchDateSelect').onchange = function() {
+    const date = this.value;
+    if (!date) {
+      document.getElementById('searchResult').innerHTML = '';
+      return;
+    }
+    // 找出这天的所有餐
+    const meals = appState.meals.filter(meal => meal.date === date);
+    if (meals.length === 0) {
+      document.getElementById('searchResult').innerHTML = `<div style="color:#888;">该日没有饮食记录。</div>`;
+      return;
+    }
+// 汇总当天健康分
+    let dayScore = '-';
+    if (meals.length >= 3) {
+      // 使用完整的健康分计算算法
+      let nutrition = {calories:0,protein:0,carbs:0,fat:0,fiber:0};
+      meals.forEach(m => {
+        nutrition.calories += m.nutrition.calories;
+        nutrition.protein += m.nutrition.protein;
+        nutrition.carbs += m.nutrition.carbs;
+        nutrition.fat += m.nutrition.fat;
+        nutrition.fiber += m.nutrition.fiber;
+      });
+      
+      // 计算具体健康分
+      let totalScore = 0;
+      
+      // 1. 基础营养摄入达成率 (25%)
+      let nutritionScore = 0;
+      const nutrients = [
+        { current: nutrition.calories, target: appState.plan.targetCalories },
+        { current: nutrition.protein, target: appState.plan.targetProtein },
+        { current: nutrition.carbs, target: appState.plan.targetCarbs },
+        { current: nutrition.fat, target: appState.plan.targetFat },
+        { current: nutrition.fiber, target: appState.plan.targetFiber }
+      ];
+      nutrients.forEach(nutrient => {
+        const ratio = nutrient.current / nutrient.target;
+        let score = 0;
+        if (ratio >= 0.85 && ratio <= 1.15) score = 5;
+        else if (ratio >= 0.7 && ratio <= 1.3) score = 4;
+        else if (ratio >= 0.5 && ratio <= 1.5) score = 2;
+        else score = 1;
+        nutritionScore += score;
+      });
+      totalScore += nutritionScore;
+      
+      // 2. 营养密度评分 (25%)
+      let densityScore = 0;
+      meals.forEach(meal => {
+        densityScore += calculateNutritionDensity(meal.nutrition);
+      });
+      densityScore = Math.min(25, densityScore / meals.length * 0.25);
+      totalScore += densityScore;
+      
+      // 3. 食物加工程度评分 (15%)
+      const avgProcessing = meals.reduce((sum, meal) => sum + meal.nutrition.processing, 0) / meals.length;
+      const processingScore = Math.max(0, 15 - Math.round(avgProcessing * 3));
+      totalScore += processingScore;
+      
+      // 4. 进餐时间及窗口评分 (15%)
+      let rhythmScore = 0;
+      const avgDuration = meals.reduce((sum, meal) => sum + meal.duration, 0) / meals.length;
+      if (avgDuration >= 20 && avgDuration <= 40) rhythmScore += 7.5;
+      else if (avgDuration >= 15 && avgDuration <= 50) rhythmScore += 5;
+      else rhythmScore += 2;
+      rhythmScore += Math.min(7.5, meals.length * 2.5);
+      totalScore += rhythmScore;
+      
+      // 5. USDA数据匹配率评分 (20%)
+      totalScore += 15; // 简化处理
+      
+      dayScore = Math.min(100, Math.round(totalScore));
+    }
+    document.getElementById('searchResult').innerHTML = `
+      <div style="margin-bottom:9px;font-weight:700;">${date} 饮食与健康分</div>
+      ${meals.map((meal,idx)=>`
+        <div style="margin-bottom:8px;padding:7px 0;border-bottom:1px dotted #a6d08c;">
+          <div>第${meal.mealNumber}餐 | 时间：${meal.time} | 用时：${meal.duration}分钟</div>
+          <div>食物：${meal.mealContent}</div>
+          <div>热量：${meal.nutrition.calories}kcal，蛋白质：${meal.nutrition.protein}g，碳水：${meal.nutrition.carbs}g，脂肪：${meal.nutrition.fat}g，纤维：${meal.nutrition.fiber}g</div>
+        </div>
+      `).join('')}
+      <div style="font-weight:700;color:#397d1c;margin-top:12px;">当日健康分：${dayScore}</div>
+    `;
+  };
+}
+
+// 显示“分数”
+function showScoreTab() {
+  setTabSelected('score');
+  currentDataTab = 'score';
+  // 用canvas绘制简单折线图，横轴为日期，纵轴为分数（你可按 appState.dailyScores 或每日日均分生成）
+  let html = `<canvas id="scoreChart" width="720" height="200" style="max-width:100%;margin-top:18px;background:rgba(150,220,220,0.13);border-radius:8px;"></canvas>`;
+  document.getElementById('dataScreenBox').innerHTML = html;
+  // 模拟每日健康分
+  const dates = [...new Set(appState.meals.map(meal => meal.date))];
+  if (dates.length === 0) return;
+  // 生成分数假数据
+  const scoreArr = dates.map(d => {
+    const meals = appState.meals.filter(meal => meal.date === d);
+    return { date: d, score: meals.length >= 3 ? 80 + Math.floor(Math.random()*10) : 40 + Math.floor(Math.random()*20)};
+  });
+  drawScoreChart(scoreArr);
+}
+
+// 绘制分数折线图
+function drawScoreChart(data) {
+  const canvas = document.getElementById('scoreChart');
+  if (!canvas || data.length === 0) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // 坐标
+  const margin = 36, chartW = canvas.width - 2*margin, chartH = canvas.height - 2*margin;
+  // 横坐标
+  const n = data.length;
+  // 分数折线加粗加色
+ctx.save();
+ctx.shadowColor = "#bfc8b4";
+ctx.shadowBlur = 8;
+ctx.lineWidth = 4;
+ctx.strokeStyle = "#40a4e0";  // 主色
+ctx.beginPath();
+for(let i=0;i<n;i++){
+    const x = margin + (chartW)*(i/(n-1));
+    const y = margin + chartH*(1-(data[i].score-20)/80);
+    if(i===0)ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+}
+ctx.stroke();
+ctx.restore();
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const x = margin + (chartW)*(i/(n-1));
+    const y = margin + chartH*(1-(data[i].score-20)/80);
+    if(i===0)ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  // 圆点与日期
+  ctx.fillStyle='#397d1c'; ctx.font='15px Segoe UI';
+  for(let i=0;i<n;i++){
+    const x = margin + (chartW)*(i/(n-1));
+    const y = margin + chartH*(1-(data[i].score-20)/80);
+    ctx.beginPath();ctx.arc(x,y,4,0,2*Math.PI);ctx.fill();
+    ctx.save();ctx.translate(x,y+19);ctx.rotate(-0.13);
+    ctx.fillText(data[i].date.slice(4),-18,0);
+    ctx.restore();
+  }
+  // 纵坐标刻度
+  ctx.fillStyle='#999'; ctx.font='12px Segoe UI';
+  for(let i=0;i<=5;i++){
+    const y = margin + chartH*(1-i/5);
+    ctx.fillText(String(20+16*i),8,y+4);
+    ctx.beginPath();ctx.moveTo(margin-6,y);ctx.lineTo(margin,y);ctx.strokeStyle='#b39a69';ctx.stroke();
+  }
+}
+
+// 显示“趋势”
+function showTrendTab() {
+  setTabSelected('trend');
+  currentDataTab = 'trend';
+  // 横轴为日期，纵轴可切换热量/蛋白质/脂肪/碳水/纤维
+  let html = `
+    <div style="margin-bottom:14px;">
+      <label style="margin-right:8px;">数据类型：</label>
+      <select id="trendType" style="font-size:1rem;padding:4px 12px;">
+        <option value="calories">热量</option>
+        <option value="protein">蛋白质</option>
+        <option value="fat">脂肪</option>
+        <option value="carbs">碳水</option>
+        <option value="fiber">膳食纤维</option>
+      </select>
+    </div>
+    <canvas id="trendChart" width="720" height="200" style="max-width:100%;background:rgba(150,220,220,0.11);border-radius:8px;"></canvas>
+  `;
+  document.getElementById('dataScreenBox').innerHTML = html;
+  // 初次加载
+  renderTrendChart('calories');
+  document.getElementById('trendType').onchange = function() {
+    renderTrendChart(this.value);
+  };
+}
+
+function renderTrendChart(type) {
+  const canvas = document.getElementById('trendChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // 获取所有日期
+  const dates = [...new Set(appState.meals.map(meal => meal.date))];
+  if (dates.length === 0) return;
+  // 统计每日摄入
+  const valueMap = {};
+  dates.forEach(d => { valueMap[d] = 0; });
+  appState.meals.forEach(meal => {
+    valueMap[meal.date] += meal.nutrition[type] || 0;
+  });
+  // 绘制折线
+  const margin = 36, chartW = canvas.width - 2*margin, chartH = canvas.height - 2*margin;
+  ctx.strokeStyle = '#457cba'; ctx.beginPath();
+  dates.forEach((d,i)=>{
+    const v = valueMap[d];
+    const x = margin + (chartW)*(i/(dates.length-1));
+    // 归一化到最大值（视觉美观可做下限限制）
+    let maxVal = Math.max(...Object.values(valueMap));
+    maxVal = Math.max(maxVal, 10);
+    const y = margin + chartH*(1-v/maxVal);
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+const colorMap = {
+  calories: "#e27c19",
+  protein: "#25ae66",
+  fat: "#b67f22",
+  carbs: "#a1a900",
+  fiber: "#4061e0"
+};
+ctx.save();
+ctx.shadowColor = "#bfc8b4";
+ctx.shadowBlur = 8;
+ctx.lineWidth = 4;
+ctx.strokeStyle = colorMap[type] || "#457cba";
+ctx.beginPath();
+dates.forEach((d,i)=>{
+    const v = valueMap[d];
+    const x = margin + (chartW)*(i/(dates.length-1));
+    let maxVal = Math.max(...Object.values(valueMap));
+    maxVal = Math.max(maxVal, 10);
+    const y = margin + chartH*(1-v/maxVal);
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+});
+ctx.stroke();
+ctx.restore();
+  ctx.stroke();
+  // 圆点与日期
+  ctx.fillStyle='#397d1c'; ctx.font='15px Segoe UI';
+  dates.forEach((d,i)=>{
+    const v = valueMap[d];
+    const x = margin + (chartW)*(i/(dates.length-1));
+    let maxVal = Math.max(...Object.values(valueMap));
+    maxVal = Math.max(maxVal, 10);
+    const y = margin + chartH*(1-v/maxVal);
+    ctx.beginPath();ctx.arc(x,y,4,0,2*Math.PI);ctx.fill();
+    ctx.save();ctx.translate(x,y+19);ctx.rotate(-0.13);
+    ctx.fillText(d.slice(4),-18,0);
+    ctx.restore();
+  });
+  // 纵坐标刻度
+  ctx.fillStyle='#999'; ctx.font='12px Segoe UI';
+  for(let i=0;i<=5;i++){
+    const y = margin + chartH*(1-i/5);
+    ctx.fillText(String(Math.round(Math.max(...Object.values(valueMap))*i/5)),8,y+4);
+    ctx.beginPath();ctx.moveTo(margin-6,y);ctx.lineTo(margin,y);ctx.strokeStyle='#b39a69';ctx.stroke();
+  }
+}
+
+// 绑定事件
+document.addEventListener('DOMContentLoaded', function() {
+document.getElementById('btnGenPlan').onclick = submitPersonalInfo;
+  // 随机生成一餐按钮事件绑定
+  const btnRand = document.getElementById("btnRandomMeal");
+  if (btnRand) {
+    btnRand.onclick = function () {
+      const input = document.getElementById("mealInputRaw");
+      if (!input) return;
+      const value = generateRandomMealInput();
+      input.value = value;
+    };
+  }
+  document.getElementById('btnOverview').onclick = showOverviewTab;
+  document.getElementById('btnSearch').onclick = showSearchTab;
+  document.getElementById('btnScore').onclick = showScoreTab;
+  document.getElementById('btnTrend').onclick = showTrendTab;
+  // 默认进入“总览”tab
+  if(document.getElementById('btnOverview')) showOverviewTab();
+});
+</script>
+<script>
+// ==== Minecraft像素风电子宠物小蛇V3 - 增强版投喂系统 ====
+
+// 配置
+const SNAKE_CANVAS_W = 480;
+const SNAKE_CANVAS_H = 140;
+const SNAKE_SPEED = 0.7;  // 单位像素/帧
+const SNAKE_SIZE = 22;    // 单节体积
+const SNAKE_MARGIN = 6;   // 离边界的最小距离
+
+let snakeLength = parseInt(localStorage.getItem('snakeLength') || '5');
+let snakeBody = [];
+let snakeEating = false;
+let snakeMood = 'normal'; // normal/smile/yum/excited
+let snakeTarget = null;
+let snakeTimer = 0;
+let feedingInProgress = false;
+let lastFeedDate = localStorage.getItem('lastFeedDate') || '';
+
+// 初始化身体
+function initSnakeBody(len) {
+    snakeBody = [];
+    let x = SNAKE_CANVAS_W / 2, y = SNAKE_CANVAS_H / 2;
+    for (let i = 0; i < len; i++) {
+        snakeBody.push({ x: x - i * SNAKE_SIZE, y: y });
+    }
+}
+
+// 画蛇
+function drawSnake(ctx) {
+    ctx.clearRect(0, 0, SNAKE_CANVAS_W, SNAKE_CANVAS_H);
+    // 身体
+    for (let i = snakeBody.length - 1; i >= 1; i--) {
+        ctx.fillStyle = '#6bbd4a';
+        ctx.fillRect(snakeBody[i].x, snakeBody[i].y, SNAKE_SIZE, SNAKE_SIZE);
+        ctx.strokeStyle = '#397d1c';
+        ctx.strokeRect(snakeBody[i].x, snakeBody[i].y, SNAKE_SIZE, SNAKE_SIZE);
+    }
+    // 头
+    const head = snakeBody[0];
+    ctx.fillStyle = '#8ae068';
+    ctx.fillRect(head.x, head.y, SNAKE_SIZE, SNAKE_SIZE);
+    ctx.strokeStyle = '#397d1c';
+    ctx.strokeRect(head.x, head.y, SNAKE_SIZE, SNAKE_SIZE);
+    // 表情
+    let fx = head.x + 5, fy = head.y + 7;
+    ctx.save();
+    ctx.fillStyle = '#222';
+    if (snakeMood === 'smile') {
+        ctx.fillRect(fx, fy, 3, 3);
+        ctx.fillRect(fx + 9, fy, 3, 3);
+        ctx.beginPath();
+        ctx.arc(head.x + SNAKE_SIZE/2, head.y + 16, 5, 0, Math.PI, false);
+        ctx.stroke();
+    } else if (snakeMood === 'yum') {
+        ctx.fillRect(fx, fy, 3, 3);
+        ctx.fillRect(fx + 9, fy, 3, 3);
+        ctx.beginPath();
+        ctx.moveTo(head.x + 8, head.y + 18);
+        ctx.lineTo(head.x + 14, head.y + 22);
+        ctx.stroke();
+    } else if (snakeMood === 'excited') {
+        // 兴奋表情 - 星星眼
+        ctx.fillStyle = '#ffeb3b';
+        ctx.font = '10px Arial';
+        ctx.fillText('★', fx - 2, fy + 5);
+        ctx.fillText('★', fx + 8, fy + 5);
+        ctx.fillStyle = '#222';
+        ctx.beginPath();
+        ctx.arc(head.x + SNAKE_SIZE/2, head.y + 16, 5, 0, Math.PI, false);
+        ctx.stroke();
+    } else { // normal
+        ctx.fillRect(fx + 1, fy, 2, 2);
+        ctx.fillRect(fx + 11, fy, 2, 2);
+        ctx.fillRect(head.x + SNAKE_SIZE/2 - 1, head.y + 14, 3, 3);
+    }
+    ctx.restore();
+}
+
+// 让蛇自由爬行
+function animateSnake() {
+    const canvas = document.getElementById('snakePet');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    // 移动
+    if (!feedingInProgress && !snakeEating && (!snakeTarget || snakeTimer-- < 0)) {
+        // 随机目标点
+        snakeTarget = {
+            x: SNAKE_MARGIN + Math.random() * (SNAKE_CANVAS_W - SNAKE_SIZE - 2 * SNAKE_MARGIN),
+            y: SNAKE_MARGIN + Math.random() * (SNAKE_CANVAS_H - SNAKE_SIZE - 2 * SNAKE_MARGIN)
+        };
+        snakeTimer = 60 + Math.floor(Math.random() * 80);
+    }
+    
+    if (!feedingInProgress && !snakeEating && snakeTarget) {
+        // 头部向目标爬行
+        let head = snakeBody[0];
+        let dx = snakeTarget.x - head.x, dy = snakeTarget.y - head.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > SNAKE_SPEED) {
+            let nx = dx / dist, ny = dy / dist;
+            let nx2 = head.x + nx * SNAKE_SPEED, ny2 = head.y + ny * SNAKE_SPEED;
+            // 插入新头，移除末端
+            snakeBody.unshift({ x: nx2, y: ny2 });
+            snakeBody.length = snakeLength;
+        }
+    }
+    
+    // 随机眨眼
+    if (!feedingInProgress && !snakeEating) {
+        snakeMood = Math.random() < 0.013 ? 'smile' : 'normal';
+    }
+    
+    drawSnake(ctx);
+    requestAnimationFrame(animateSnake);
+}
+
+// 检查投喂按钮状态
+function updateFeedButtonState() {
+    const btnFeed = document.getElementById('btnFeedSnake');
+    if (!btnFeed) return;
+    
+    if (!appState.meals || appState.meals.length === 0) {
+        btnFeed.classList.remove('active');
+        return;
+    }
+    
+    const lastMeal = appState.meals[appState.meals.length - 1];
+    const currentDate = lastMeal.date;
+    const todayMeals = appState.meals.filter(m => m.date === currentDate);
+    
+    // 检查条件：三餐录入完成，脂肪未达标，今天还没投喂过
+    if (todayMeals.length === 3 && 
+        appState.dailyNutrition.fat < appState.plan.targetFat &&
+        lastFeedDate !== currentDate) {
+        btnFeed.classList.add('active');
+    } else {
+        btnFeed.classList.remove('active');
+    }
+}
+
+// 创建脂肪小球
+function createFatBalls() {
+    const container = document.getElementById('fatBallsContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    const fatBar = document.getElementById('fatProgressBar');
+    const progressBar = document.getElementById('progressFat');
+    if (!fatBar || !progressBar) return;
+    
+    const barWidth = fatBar.offsetWidth;
+    const currentPercent = parseFloat(progressBar.style.width) || 0;
+    const currentWidth = barWidth * currentPercent / 100;
+    
+    // 计算差额部分的长度
+    const gapWidth = barWidth - currentWidth;
+    if (gapWidth <= 0) return [];
+    
+    // 计算小球数量（每个小球14px，间隔7px）
+    const ballCount = Math.floor(gapWidth / 21);
+    const balls = [];
+    
+    for (let i = 0; i < ballCount; i++) {
+        const ball = document.createElement('div');
+        ball.className = 'fat-ball';
+        ball.style.left = (currentWidth + i * 21 + 3) + 'px';
+        container.appendChild(ball);
+        balls.push(ball);
+    }
+    
+    return balls;
+}
+
+// 投喂小蛇
+function feedSnake() {
+    const btnFeed = document.getElementById('btnFeedSnake');
+    if (!btnFeed || !btnFeed.classList.contains('active') || feedingInProgress) return;
+    
+    feedingInProgress = true;
+    btnFeed.classList.remove('active');
+    
+    // 记录投喂日期
+    const currentDate = appState.meals[appState.meals.length - 1].date;
+    lastFeedDate = currentDate;
+    localStorage.setItem('lastFeedDate', currentDate);
+    
+    // 创建小球
+    const balls = createFatBalls();
+    if (!balls || balls.length === 0) {
+        feedingInProgress = false;
+        return;
+    }
+    
+    // 小蛇兴奋跳动
+    snakeMood = 'excited';
+    let jumpCount = 0;
+    const jumpInterval = setInterval(() => {
+        const head = snakeBody[0];
+        if (jumpCount % 2 === 0) {
+            snakeBody[0] = { ...head, y: head.y - 10 };
+        } else {
+            snakeBody[0] = { ...head, y: head.y + 10 };
+        }
+        jumpCount++;
+        if (jumpCount >= 6) {
+            clearInterval(jumpInterval);
+            startEatingBalls(balls);
+        }
+    }, 150);
+}
+
+// 开始吃球动画
+function startEatingBalls(balls) {
+    if (!balls || balls.length === 0) return;
+    
+    const canvas = document.getElementById('snakePet');
+    const canvasRect = canvas.getBoundingClientRect();
+    let ballIndex = balls.length - 1; // 从最右边的球开始
+    
+    function eatNextBall() {
+        if (ballIndex < 0) {
+            // 吃完所有球，显示爱心
+            showHeart();
+            feedingInProgress = false;
+            return;
+        }
+        
+        const ball = balls[ballIndex];
+        const ballRect = ball.getBoundingClientRect();
+        
+        // 精确计算目标位置 - 球的中心对应蛇头中心
+        let targetX = ballRect.left - canvasRect.left + (ballRect.width / 2) - (SNAKE_SIZE / 2);
+        let targetY = ballRect.top - canvasRect.top + (ballRect.height / 2) - (SNAKE_SIZE / 2);
+        
+        // 限制在canvas范围内
+        targetX = Math.max(SNAKE_MARGIN, Math.min(targetX, SNAKE_CANVAS_W - SNAKE_SIZE - SNAKE_MARGIN));
+        targetY = Math.max(SNAKE_MARGIN, Math.min(targetY, SNAKE_CANVAS_H - SNAKE_SIZE - SNAKE_MARGIN));
+        
+        // 快速移动到球的位置
+        snakeMood = 'yum';
+        const moveSpeed = 4; // 快速移动
+        
+        function moveTowardsBall() {
+            const head = snakeBody[0];
+            const dx = targetX - head.x;
+            const dy = targetY - head.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist > moveSpeed) {
+                const nx = dx / dist * moveSpeed;
+                const ny = dy / dist * moveSpeed;
+                snakeBody.unshift({ x: head.x + nx, y: head.y + ny });
+                snakeBody.length = snakeLength;
+                requestAnimationFrame(moveTowardsBall);
+            } else {
+                // 精确定位到目标位置
+                snakeBody[0] = { x: targetX, y: targetY };
+                
+                // 吃掉球
+                ball.style.opacity = '0';
+                setTimeout(() => {
+                    ball.remove();
+                    // 增长身体
+                    snakeLength++;
+                    snakeBody.push({ ...snakeBody[snakeBody.length - 1] });
+                    localStorage.setItem('snakeLength', snakeLength);
+                    
+                    ballIndex--;
+                    setTimeout(() => eatNextBall(), 300);
+                }, 150);
+            }
+        }
+        
+        moveTowardsBall();
+    }
+    
+    eatNextBall();
+}
+// 显示爱心动画
+function showHeart() {
+    snakeMood = 'smile';
+    const canvas = document.getElementById('snakePet');
+    const canvasRect = canvas.getBoundingClientRect();
+    const head = snakeBody[0];
+    
+    const heart = document.createElement('div');
+    heart.className = 'snake-heart';
+    heart.innerHTML = '💕';
+    heart.style.position = 'fixed';
+    heart.style.left = (canvasRect.left + head.x + SNAKE_SIZE/2 - 12) + 'px';
+    heart.style.top = (canvasRect.top + head.y - 10) + 'px';
+    heart.style.zIndex = '1003';
+    document.body.appendChild(heart);
+    
+    setTimeout(() => {
+        heart.remove();
+        snakeMood = 'normal';
+        snakeTarget = null; // 重置目标，继续自由爬行
+    }, 1500);
+}
+
+// 监听餐食提交，更新按钮状态
+const originalSubmitMeal = submitMeal;
+submitMeal = function() {
+    originalSubmitMeal();
+    setTimeout(updateFeedButtonState, 100);
+};
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    initSnakeBody(snakeLength);
+    animateSnake();
+    updateFeedButtonState();
+});
+</script>
+<!-- 像素蛇电子宠物：始终悬浮在页面左下角，不影响内容布局 -->
+<div id="snakePetContainer" style="position:fixed; left:24px; bottom:24px; z-index:1002; pointer-events:none;">
+  <canvas id="snakePet" width="480" height="180" style="display:block;"></canvas>
+</div>
+</body>
+</html>
