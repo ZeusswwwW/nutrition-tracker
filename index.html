@@ -990,8 +990,10 @@ function switchToDataPage() {
     if (accuracyInfo) {
         accuracyInfo.style.display = 'block';
     }
-    // 刷新数据页内容
-    updateDataProgressBars();
+    // 刷新数据页内容 - 添加安全检查
+    if (appState.plan && appState.plan.targetCalories) {
+        updateDataProgressBars();
+    }
     updateDataPageCharts && updateDataPageCharts();
 }
 
@@ -1536,11 +1538,17 @@ if (!bar) return;
 // ========== 数据页进度条、健康分显示 ==========
 // （新代码，直接插入即可）
 function updateDataProgressBars() {
+    // 简单的安全检查，如果没有计划数据就不执行
+    if (!appState.plan || !appState.plan.targetCalories) {
+        return;
+    }
+    
     const plan = appState.plan;
     const curr = appState.dailyNutrition;
+    
     function updateBar(id, value, max) {
-const bar = document.getElementById(id);
-if (!bar) return;
+        const bar = document.getElementById(id);
+        if (!bar) return;
         const percent = Math.min(100, Math.round((value / max) * 100));
         bar.style.width = percent + '%';
         if (percent > 100) {
@@ -1549,19 +1557,25 @@ if (!bar) return;
             bar.classList.remove('progress-overflow');
         }
     }
+    
+    function updateText(id, text) {
+        const element = document.getElementById(id);
+        if (!element) return;
+        element.textContent = text;
+    }
+    
     updateBar('data-progressCalories', curr.calories, plan.targetCalories);
     updateBar('data-progressProtein', curr.protein, plan.targetProtein);
     updateBar('data-progressCarbs', curr.carbs, plan.targetCarbs);
     updateBar('data-progressFat', curr.fat, plan.targetFat);
     updateBar('data-progressFiber', curr.fiber, plan.targetFiber);
 
-    document.getElementById('data-progressCaloriesValue').textContent = `${curr.calories} / ${plan.targetCalories} kcal`;
-    document.getElementById('data-progressProteinValue').textContent = `${curr.protein} / ${plan.targetProtein} g`;
-    document.getElementById('data-progressCarbsValue').textContent = `${curr.carbs} / ${plan.targetCarbs} g`;
-    document.getElementById('data-progressFatValue').textContent = `${curr.fat} / ${plan.targetFat} g`;
-    document.getElementById('data-progressFiberValue').textContent = `${curr.fiber} / ${plan.targetFiber} g`;
+    updateText('data-progressCaloriesValue', `${curr.calories} / ${plan.targetCalories} kcal`);
+    updateText('data-progressProteinValue', `${curr.protein} / ${plan.targetProtein} g`);
+    updateText('data-progressCarbsValue', `${curr.carbs} / ${plan.targetCarbs} g`);
+    updateText('data-progressFatValue', `${curr.fat} / ${plan.targetFat} g`);
+    updateText('data-progressFiberValue', `${curr.fiber} / ${plan.targetFiber} g`);
 }
-
 
 // ========== 健康评分计算 ==========
 function calculateNutritionDensity(nutrition) {
